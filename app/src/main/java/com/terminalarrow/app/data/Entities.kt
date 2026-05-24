@@ -1,8 +1,10 @@
 package com.terminalarrow.app.data
 
+import androidx.annotation.Keep
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+@Keep
 data class ForwardingRule(
     val type: String, // "LOCAL", "REMOTE", "DYNAMIC"
     val localPort: Int,
@@ -10,6 +12,7 @@ data class ForwardingRule(
     val remotePort: Int? = null
 )
 
+@Keep
 @Entity(tableName = "connection_profiles")
 data class ConnectionProfile(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
@@ -23,6 +26,7 @@ data class ConnectionProfile(
     val forwardingRules: List<ForwardingRule> = emptyList()
 )
 
+@Keep
 @Entity(tableName = "snippets")
 data class Snippet(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
