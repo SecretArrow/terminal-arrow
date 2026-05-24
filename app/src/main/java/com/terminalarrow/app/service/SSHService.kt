@@ -49,7 +49,7 @@ class SSHService @Inject constructor(@dagger.hilt.android.qualifiers.Application
             sessionScope.launch {
                 val inputStream = shell.inputStream
                 val buffer = ByteArray(2048)
-                var read: Int
+                var read: Int = 0
                 while (isActive && inputStream.read(buffer).also { read = it } != -1) {
                     onOutput(String(buffer, 0, read))
                 }

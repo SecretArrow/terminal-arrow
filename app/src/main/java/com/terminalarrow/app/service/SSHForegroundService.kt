@@ -33,6 +33,13 @@ class SSHForegroundService : Service() {
         return START_STICKY
     }
 
+    override fun onDestroy() {
+        wakeLock?.release()
+        super.onDestroy()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
     companion object {
         fun start(context: Context) {
             val intent = Intent(context, SSHForegroundService::class.java)

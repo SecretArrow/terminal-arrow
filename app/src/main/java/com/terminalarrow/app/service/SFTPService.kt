@@ -48,8 +48,8 @@ class SFTPService @Inject constructor() {
     }
 
     suspend fun getRemoteInputStream(path: String): java.io.InputStream? = withContext(Dispatchers.IO) {
-        sftpClient?.open(path)?.let { handle ->
-            net.schmizz.sshj.sftp.RemoteFile(sftpClient, handle).RemoteFileInputStream()
+        sftpClient?.open(path)?.let { remoteFile ->
+            remoteFile.RemoteFileInputStream()
         }
     }
 

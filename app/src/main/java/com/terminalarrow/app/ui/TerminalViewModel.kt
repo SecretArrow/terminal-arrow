@@ -79,6 +79,10 @@ class TerminalViewModel @Inject constructor(
         sshService.sendCommand(id, command)
     }
 
+    fun sendCommand(command: String) {
+        sshService.sendCommand(_activeSession.value, command)
+    }
+
     fun performSearch(id: String, query: String) {
         _searchQuery.value = query
         if (query.isNotBlank()) {

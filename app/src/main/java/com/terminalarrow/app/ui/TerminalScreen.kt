@@ -10,6 +10,13 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -130,10 +137,10 @@ fun TerminalScreen(viewModel: TerminalViewModel, themeManager: ThemeManager) {
                     fontSize = themeManager.fontSize.sp
                 ),
                 cursorBrush = androidx.compose.ui.graphics.SolidColor(theme.cursor),
-                keyboardOptions = androidx.compose.ui.text.input.KeyboardOptions(
-                    imeAction = androidx.compose.ui.text.input.ImeAction.Go
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Go
                 ),
-                keyboardActions = androidx.compose.ui.text.input.KeyboardActions(
+                keyboardActions = KeyboardActions(
                     onGo = {
                         if (inputText.isNotBlank()) {
                             viewModel.sendCommand(activeSessionId, inputText + "\n")

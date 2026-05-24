@@ -499,7 +499,7 @@ public final class DaggerTerminalArrowApp_HiltComponents_SingletonC {
           return (T) new SnippetViewModel(singletonCImpl.terminalDao());
 
           case 5: // com.terminalarrow.app.ui.TerminalViewModel 
-          return (T) new TerminalViewModel(singletonCImpl.sSHServiceProvider.get(), singletonCImpl.vibratorHelperProvider.get(), singletonCImpl.nativeBufferProcessorProvider.get());
+          return (T) new TerminalViewModel(singletonCImpl.sSHServiceProvider.get(), singletonCImpl.sFTPServiceProvider.get(), singletonCImpl.vibratorHelperProvider.get(), singletonCImpl.nativeBufferProcessorProvider.get());
 
           default: throw new AssertionError(id);
         }
@@ -668,7 +668,7 @@ public final class DaggerTerminalArrowApp_HiltComponents_SingletonC {
           return (T) new BackupManager(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.terminalDao());
 
           case 5: // com.terminalarrow.app.service.SSHService 
-          return (T) new SSHService();
+          return (T) new SSHService(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           case 6: // com.terminalarrow.app.utils.VibratorHelper 
           return (T) new VibratorHelper(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
