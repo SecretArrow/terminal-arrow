@@ -71,8 +71,16 @@ class SSHService @Inject constructor(@dagger.hilt.android.qualifiers.Application
     }
 
     fun sendCommand(sessionId: String, command: String) {
-        sessions[sessionId]?.shellStream?.write(command.toByteArray())
-        sessions[sessionId]?.shellStream?.flush()
+        sessions[sessionId]?.let { container ->
+            container.scope.launch(Dispatchers.IO) {
+                try {
+                    container.shellStream.write(command.toByteArray())
+                    container.shellStream.flush()
+                } catch (e: Exception) {
+                    // Ignored or handle connection drop
+                }
+            }
+        }
     }
 
     fun disconnect(sessionId: String) {

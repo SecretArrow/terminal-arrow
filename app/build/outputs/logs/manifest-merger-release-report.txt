@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:2:1-30:12
-INJECTED from /home/warden/terminal/app/src/main/AndroidManifest.xml:2:1-30:12
-INJECTED from /home/warden/terminal/app/src/main/AndroidManifest.xml:2:1-30:12
-INJECTED from /home/warden/terminal/app/src/main/AndroidManifest.xml:2:1-30:12
+ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:2:1-38:12
+INJECTED from /home/warden/terminal/app/src/main/AndroidManifest.xml:2:1-38:12
+INJECTED from /home/warden/terminal/app/src/main/AndroidManifest.xml:2:1-38:12
+INJECTED from /home/warden/terminal/app/src/main/AndroidManifest.xml:2:1-38:12
 MERGED from [androidx.biometric:biometric:1.1.0] /home/warden/.gradle/caches/transforms-3/83cb5aa7df148986b417f1ecce9944f5/transformed/biometric-1.1.0/AndroidManifest.xml:17:1-29:12
 MERGED from [androidx.appcompat:appcompat:1.2.0] /home/warden/.gradle/caches/transforms-3/41c0d74d78cd30ee3d9c3935c8d6c1a9/transformed/appcompat-1.2.0/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.hilt:hilt-navigation-compose:1.1.0] /home/warden/.gradle/caches/transforms-3/5919818dde4993203000fd34d34f8006/transformed/jetified-hilt-navigation-compose-1.1.0/AndroidManifest.xml:2:1-7:12
@@ -90,13 +90,31 @@ uses-permission#android.permission.FOREGROUND_SERVICE
 ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:5:5-77
 	android:name
 		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:5:22-74
-uses-permission#android.permission.WAKE_LOCK
-ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:6:5-68
+uses-permission#android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE
+ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:6:5-94
 	android:name
-		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:6:22-65
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:6:22-91
+uses-permission#android.permission.WAKE_LOCK
+ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:7:5-68
+	android:name
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:7:22-65
+uses-permission#android.permission.VIBRATE
+ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:8:5-66
+	android:name
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:8:22-63
+uses-permission#android.permission.USE_BIOMETRIC
+ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:9:5-72
+MERGED from [androidx.biometric:biometric:1.1.0] /home/warden/.gradle/caches/transforms-3/83cb5aa7df148986b417f1ecce9944f5/transformed/biometric-1.1.0/AndroidManifest.xml:24:5-72
+MERGED from [androidx.biometric:biometric:1.1.0] /home/warden/.gradle/caches/transforms-3/83cb5aa7df148986b417f1ecce9944f5/transformed/biometric-1.1.0/AndroidManifest.xml:24:5-72
+	android:name
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:9:22-69
+uses-permission#android.permission.POST_NOTIFICATIONS
+ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:10:5-77
+	android:name
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:10:22-74
 application
-ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:8:5-28:19
-INJECTED from /home/warden/terminal/app/src/main/AndroidManifest.xml:8:5-28:19
+ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:12:5-36:19
+INJECTED from /home/warden/terminal/app/src/main/AndroidManifest.xml:12:5-36:19
 MERGED from [androidx.emoji2:emoji2:1.4.0] /home/warden/.gradle/caches/transforms-3/075b1fffba1a35517960a1fb6ff7a1e1/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:23:5-33:19
 MERGED from [androidx.emoji2:emoji2:1.4.0] /home/warden/.gradle/caches/transforms-3/075b1fffba1a35517960a1fb6ff7a1e1/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:23:5-33:19
 MERGED from [androidx.lifecycle:lifecycle-process:2.7.0] /home/warden/.gradle/caches/transforms-3/9406cdd678c0109dabd6aac6b3c89397/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:23:5-33:19
@@ -118,45 +136,47 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] /home/warden/.gradle/caches
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.12.0] /home/warden/.gradle/caches/transforms-3/178e4d81b3980cb7c7bb97b557003ff7/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
 	android:supportsRtl
-		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:14:9-35
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:18:9-35
 	android:label
-		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:12:9-39
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:16:9-39
 	android:roundIcon
-		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:13:9-54
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:17:9-54
 	android:icon
-		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:11:9-43
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:15:9-43
 	android:allowBackup
-		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:10:9-35
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:14:9-35
 	android:theme
-		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:15:9-72
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:19:9-72
 	android:name
-		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:9:9-41
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:13:9-41
 service#com.terminalarrow.app.service.SSHForegroundService
-ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:17:9-113
+ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:21:9-25:63
 	android:enabled
-		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:17:63-85
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:23:13-35
 	android:exported
-		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:17:86-110
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:24:13-37
+	android:foregroundServiceType
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:25:13-60
 	android:name
-		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:17:18-62
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:22:13-57
 activity#com.terminalarrow.app.MainActivity
-ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:19:9-27:20
+ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:27:9-35:20
 	android:exported
-		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:21:13-36
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:29:13-36
 	android:theme
-		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:22:13-76
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:30:13-76
 	android:name
-		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:20:13-41
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:28:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:23:13-26:29
+ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:31:13-34:29
 action#android.intent.action.MAIN
-ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:24:17-69
+ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:32:17-69
 	android:name
-		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:24:25-66
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:32:25-66
 category#android.intent.category.LAUNCHER
-ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:25:17-77
+ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:33:17-77
 	android:name
-		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:25:27-74
+		ADDED from /home/warden/terminal/app/src/main/AndroidManifest.xml:33:27-74
 uses-sdk
 INJECTED from /home/warden/terminal/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from /home/warden/terminal/app/src/main/AndroidManifest.xml
@@ -305,10 +325,6 @@ MERGED from [com.google.dagger:dagger-lint-aar:2.50] /home/warden/.gradle/caches
 		INJECTED from /home/warden/terminal/app/src/main/AndroidManifest.xml
 	android:minSdkVersion
 		INJECTED from /home/warden/terminal/app/src/main/AndroidManifest.xml
-uses-permission#android.permission.USE_BIOMETRIC
-ADDED from [androidx.biometric:biometric:1.1.0] /home/warden/.gradle/caches/transforms-3/83cb5aa7df148986b417f1ecce9944f5/transformed/biometric-1.1.0/AndroidManifest.xml:24:5-72
-	android:name
-		ADDED from [androidx.biometric:biometric:1.1.0] /home/warden/.gradle/caches/transforms-3/83cb5aa7df148986b417f1ecce9944f5/transformed/biometric-1.1.0/AndroidManifest.xml:24:22-69
 uses-permission#android.permission.USE_FINGERPRINT
 ADDED from [androidx.biometric:biometric:1.1.0] /home/warden/.gradle/caches/transforms-3/83cb5aa7df148986b417f1ecce9944f5/transformed/biometric-1.1.0/AndroidManifest.xml:27:5-74
 	android:name

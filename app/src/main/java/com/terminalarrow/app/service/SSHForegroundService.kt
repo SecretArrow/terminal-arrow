@@ -23,7 +23,11 @@ class SSHForegroundService : Service() {
             .setOngoing(true)
             .build()
 
-        startForeground(1, notification)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            startForeground(1, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE)
+        } else {
+            startForeground(1, notification)
+        }
 
         // Wake Lock to keep CPU alive indefinitely while service is running
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
