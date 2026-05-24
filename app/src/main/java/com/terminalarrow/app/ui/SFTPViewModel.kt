@@ -35,12 +35,42 @@ class SFTPViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _transferProgress = MutableStateFlow<Int?>(null)
+    val transferProgress: StateFlow<Int?> = _transferProgress
+
     private var archiveContentsCache: Map<String, List<VirtualFile>> = emptyMap()
 
-    fun connectAndList(host: String, port: Int, user: String, pass: String) {
+    fun downloadFile(remotePath: String, localPath: String) {
+        viewModelScope.launch {
+            _transferProgress.value = 0
+            try {
+                sftpService.downloadFile(remotePath, localPath) { progress ->
+                    _transferProgress.value = progress
+                }
+            } finally {
+                _transferProgress.value = null
+            }
+        }
+    }
+
+    fun uploadFile(localPath: String, remotePath: String) {
+        viewModelScope.launch {
+            _transferProgress.value = 0
+            try {
+                sftpService.uploadFile(localPath, remotePath) { progress ->
+                    _transferProgress.value = progress
+                }
+                loadPath(_currentPath.value)
+            } finally {
+                _transferProgress.value = null
+            }
+        }
+    }
+
+    fun connectAndList(host: String, port: Int, user: String, pass: String?, keyPath: String? = null) {
         viewModelScope.launch {
             _isLoading.value = true
-            if (sftpService.connect(host, port, user, pass)) {
+            if (sftpService.connect(host, port, user, pass, keyPath)) {
                 _isInsideArchive.value = false
                 loadPath("/")
             }

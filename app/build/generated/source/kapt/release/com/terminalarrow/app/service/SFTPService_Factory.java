@@ -1,13 +1,15 @@
 package com.terminalarrow.app.service;
 
+import android.content.Context;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.QualifierMetadata;
 import dagger.internal.ScopeMetadata;
 import javax.annotation.processing.Generated;
+import javax.inject.Provider;
 
 @ScopeMetadata("javax.inject.Singleton")
-@QualifierMetadata
+@QualifierMetadata("dagger.hilt.android.qualifiers.ApplicationContext")
 @DaggerGenerated
 @Generated(
     value = "dagger.internal.codegen.ComponentProcessor",
@@ -20,20 +22,22 @@ import javax.annotation.processing.Generated;
     "KotlinInternalInJava"
 })
 public final class SFTPService_Factory implements Factory<SFTPService> {
+  private final Provider<Context> contextProvider;
+
+  public SFTPService_Factory(Provider<Context> contextProvider) {
+    this.contextProvider = contextProvider;
+  }
+
   @Override
   public SFTPService get() {
-    return newInstance();
+    return newInstance(contextProvider.get());
   }
 
-  public static SFTPService_Factory create() {
-    return InstanceHolder.INSTANCE;
+  public static SFTPService_Factory create(Provider<Context> contextProvider) {
+    return new SFTPService_Factory(contextProvider);
   }
 
-  public static SFTPService newInstance() {
-    return new SFTPService();
-  }
-
-  private static final class InstanceHolder {
-    private static final SFTPService_Factory INSTANCE = new SFTPService_Factory();
+  public static SFTPService newInstance(Context context) {
+    return new SFTPService(context);
   }
 }

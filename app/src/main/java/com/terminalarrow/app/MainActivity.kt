@@ -74,7 +74,7 @@ fun TerminalArrowNavigation(themeManager: ThemeManager) {
                     navController.navigate("terminal")
                 },
                 onSFTPClick = { profile ->
-                    sftpViewModel.connectAndList(profile.host, profile.port, profile.username, profile.password ?: "")
+                    sftpViewModel.connectAndList(profile.host, profile.port, profile.username, profile.password, profile.keyPath)
                     navController.navigate("sftp")
                 },
                 onAddProfile = { navController.navigate("config") },
@@ -91,8 +91,8 @@ fun TerminalArrowNavigation(themeManager: ThemeManager) {
                     terminalViewModel.connect(profile)
                     navController.navigate("terminal")
                 },
-                onSave = { name, host, port, user, pass, group, rules ->
-                    profileViewModel.saveProfile(ConnectionProfile(name = name, host = host, port = port, username = user, password = pass, group = group, forwardingRules = rules))
+                onSave = { name, host, port, user, pass, keyPath, group, rules ->
+                    profileViewModel.saveProfile(ConnectionProfile(name = name, host = host, port = port, username = user, password = pass, keyPath = keyPath, group = group, forwardingRules = rules))
                     navController.popBackStack()
                 }
             )

@@ -45,7 +45,7 @@ class TerminalViewModel @Inject constructor(
             com.terminalarrow.app.service.SSHForegroundService.start(sshService.getContext())
             
             // Connect SFTP for smart autocomplete support
-            sftpService.connect(profile.host, profile.port, profile.username, profile.password ?: "")
+            sftpService.connect(profile.host, profile.port, profile.username, profile.password, profile.keyPath)
             
             sshService.connect(id, profile) { output ->
                 if (output.contains("\u0007")) vibratorHelper.vibrate()
@@ -81,6 +81,16 @@ class TerminalViewModel @Inject constructor(
 
     fun sendCommand(command: String) {
         sshService.sendCommand(_activeSession.value, command)
+    }
+
+    fun resizeTerminal(id: String, cols: Int, rows: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                sshService.resizePty(id, cols, rows)
+            } catch (e: Exception) {
+                // Ignore errors if session closed
+            }
+        }
     }
 
     fun performSearch(id: String, query: String) {

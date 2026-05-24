@@ -662,7 +662,7 @@ public final class DaggerTerminalArrowApp_HiltComponents_SingletonC {
           return (T) DatabaseModule_ProvideDatabaseFactory.provideDatabase(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           case 3: // com.terminalarrow.app.service.SFTPService 
-          return (T) new SFTPService();
+          return (T) new SFTPService(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           case 4: // com.terminalarrow.app.utils.BackupManager 
           return (T) new BackupManager(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.terminalDao());

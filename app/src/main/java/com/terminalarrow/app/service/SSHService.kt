@@ -19,6 +19,7 @@ class SSHService @Inject constructor(@dagger.hilt.android.qualifiers.Application
 
     data class SessionContainer(
         val client: SSHClient,
+        val shell: net.schmizz.sshj.connection.channel.direct.Session.Shell,
         val shellStream: OutputStream,
         val scope: CoroutineScope
     )
@@ -34,17 +35,23 @@ class SSHService @Inject constructor(@dagger.hilt.android.qualifiers.Application
         
         try {
             client.connect(profile.host, profile.port)
-            if (profile.password != null) {
+            if (!profile.keyPath.isNullOrBlank()) {
+                val tempKeyFile = java.io.File(context.cacheDir, "temp_key_${System.currentTimeMillis()}")
+                tempKeyFile.writeText(profile.keyPath)
+                val keyProvider = client.loadKeys(tempKeyFile.absolutePath)
+                client.authPublickey(profile.username, keyProvider)
+                tempKeyFile.delete()
+            } else if (profile.password != null) {
                 client.authPassword(profile.username, profile.password)
             }
 
             val session = client.startSession()
-            session.allocateDefaultPTY()
+            session.allocatePTY("xterm", 80, 24, 0, 0, emptyMap())
             val shell = session.startShell()
             val outputStream = shell.outputStream
             
             val sessionScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-            sessions[sessionId] = SessionContainer(client, outputStream, sessionScope)
+            sessions[sessionId] = SessionContainer(client, shell, outputStream, sessionScope)
 
             sessionScope.launch {
                 val inputStream = shell.inputStream
@@ -57,6 +64,10 @@ class SSHService @Inject constructor(@dagger.hilt.android.qualifiers.Application
         } catch (e: Exception) {
             onOutput("Error: ${e.message}\n")
         }
+    }
+
+    fun resizePty(sessionId: String, cols: Int, rows: Int) {
+        sessions[sessionId]?.shell?.changeWindowDimensions(cols, rows, 0, 0)
     }
 
     fun sendCommand(sessionId: String, command: String) {

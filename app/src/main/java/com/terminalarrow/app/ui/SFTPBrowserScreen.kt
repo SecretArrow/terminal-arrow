@@ -19,6 +19,7 @@ fun SFTPBrowserScreen(viewModel: SFTPViewModel, onFileClick: (String) -> Unit) {
     val files by viewModel.files.collectAsState()
     val currentPath by viewModel.currentPath.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val transferProgress by viewModel.transferProgress.collectAsState()
     
     var showRenameDialog by remember { mutableStateOf<String?>(null) }
     var newName by remember { mutableStateOf("") }
@@ -47,13 +48,20 @@ fun SFTPBrowserScreen(viewModel: SFTPViewModel, onFileClick: (String) -> Unit) {
             )
         }
     ) { padding ->
-        if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+        Column(modifier = Modifier.padding(padding)) {
+            if (transferProgress != null) {
+                LinearProgressIndicator(
+                    progress = (transferProgress ?: 0) / 100f,
+                    modifier = Modifier.fillMaxWidth().height(4.dp)
+                )
             }
-        } else {
-            LazyColumn(modifier = Modifier.padding(padding)) {
-                items(files) { file ->
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(files) { file ->
                     val isDir = file.isDirectory
                     val isArchive = file.isArchive
                     ListItem(
@@ -93,11 +101,12 @@ fun SFTPBrowserScreen(viewModel: SFTPViewModel, onFileClick: (String) -> Unit) {
                         }
                     )
                     Divider()
-                }
-            }
-        }
+                } // End items
+            } // End LazyColumn
+        } // End else (isLoading)
+    } // End Column
         
-        if (showRenameDialog != null) {
+    if (showRenameDialog != null) {
             AlertDialog(
                 onDismissRequest = { showRenameDialog = null },
                 title = { Text("Rename File") },

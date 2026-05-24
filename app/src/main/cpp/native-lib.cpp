@@ -14,17 +14,28 @@ std::string processANSI(const std::string& input) {
     output.reserve(input.size());
     
     bool in_escape = false;
+    std::string escape_seq;
+    
     for (size_t i = 0; i < input.length(); ++i) {
         if (input[i] == '\u001B') { // ESC
             in_escape = true;
+            escape_seq = "";
             continue;
         }
         
         if (in_escape) {
-            // Basic CSI (Command Sequence Introducer) handling: ESC [ ... m/K/etc.
-            // We wait for the terminating character (usually a letter)
+            escape_seq += input[i];
             if (isalpha(input[i])) {
                 in_escape = false;
+                if (input[i] == 'm') {
+                    // Extract color code
+                    if (escape_seq.length() > 2 && escape_seq[0] == '[') {
+                        std::string code = escape_seq.substr(1, escape_seq.length() - 2);
+                        output += "[C:" + code + "]";
+                    } else {
+                        output += "[C:0]";
+                    }
+                }
             }
             continue;
         }

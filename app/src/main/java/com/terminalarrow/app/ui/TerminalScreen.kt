@@ -19,6 +19,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -90,10 +91,50 @@ fun TerminalScreen(viewModel: TerminalViewModel, themeManager: ThemeManager) {
         }
 
         Row(modifier = Modifier.weight(1f)) {
-            TerminalCanvas(sessions["primary"] ?: "", themeManager, Modifier.weight(1f))
+            Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                TerminalCanvas(
+                    output = sessions["primary"] ?: "",
+                    themeManager = themeManager,
+                    modifier = Modifier.fillMaxSize(),
+                    onResize = { cols, rows -> viewModel.resizeTerminal("primary", cols, rows) }
+                )
+                VirtualDPad(
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+                    onDirection = { dir -> 
+                        val seq = when (dir) {
+                            "UP" -> "\u001B[A"
+                            "DOWN" -> "\u001B[B"
+                            "RIGHT" -> "\u001B[C"
+                            "LEFT" -> "\u001B[D"
+                            else -> ""
+                        }
+                        viewModel.sendCommand("primary", seq)
+                    }
+                )
+            }
             if (isSplitView) {
                 Divider(modifier = Modifier.width(1.dp).fillMaxHeight())
-                TerminalCanvas(sessions["secondary"] ?: "", themeManager, Modifier.weight(1f))
+                Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                    TerminalCanvas(
+                        output = sessions["secondary"] ?: "",
+                        themeManager = themeManager,
+                        modifier = Modifier.fillMaxSize(),
+                        onResize = { cols, rows -> viewModel.resizeTerminal("secondary", cols, rows) }
+                    )
+                    VirtualDPad(
+                        modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+                        onDirection = { dir -> 
+                            val seq = when (dir) {
+                                "UP" -> "\u001B[A"
+                                "DOWN" -> "\u001B[B"
+                                "RIGHT" -> "\u001B[C"
+                                "LEFT" -> "\u001B[D"
+                                else -> ""
+                            }
+                            viewModel.sendCommand("secondary", seq)
+                        }
+                    )
+                }
             }
         }
 
@@ -163,6 +204,27 @@ fun SuggestionChip(onClick: () -> Unit, label: @Composable () -> Unit) {
     ) {
         Box(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)) {
             label()
+        }
+    }
+}
+
+@Composable
+fun VirtualDPad(modifier: Modifier = Modifier, onDirection: (String) -> Unit) {
+    Column(modifier = modifier.background(Color.Black.copy(alpha = 0.3f), shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)).padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Button(onClick = { onDirection("UP") }, contentPadding = PaddingValues(0.dp), modifier = Modifier.size(40.dp)) {
+            Text("↑")
+        }
+        Row {
+            Button(onClick = { onDirection("LEFT") }, contentPadding = PaddingValues(0.dp), modifier = Modifier.size(40.dp)) {
+                Text("←")
+            }
+            Spacer(modifier = Modifier.width(40.dp))
+            Button(onClick = { onDirection("RIGHT") }, contentPadding = PaddingValues(0.dp), modifier = Modifier.size(40.dp)) {
+                Text("→")
+            }
+        }
+        Button(onClick = { onDirection("DOWN") }, contentPadding = PaddingValues(0.dp), modifier = Modifier.size(40.dp)) {
+            Text("↓")
         }
     }
 }
