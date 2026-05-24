@@ -1,0 +1,4 @@
+/home/warden/android-sdk/cmake/3.22.1/bin/ninja \
+  -C \
+  /home/warden/terminal/app/.cxx/RelWithDebInfo/5e1f3e4n/arm64-v8a \
+  native-lib

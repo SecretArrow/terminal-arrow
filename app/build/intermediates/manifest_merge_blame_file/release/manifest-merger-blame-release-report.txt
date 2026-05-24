@@ -1,0 +1,169 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.terminalarrow.app"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="26"
+9        android:targetSdkVersion="34" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->/home/warden/terminal/app/src/main/AndroidManifest.xml:4:5-67
+11-->/home/warden/terminal/app/src/main/AndroidManifest.xml:4:22-64
+12    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+12-->/home/warden/terminal/app/src/main/AndroidManifest.xml:5:5-77
+12-->/home/warden/terminal/app/src/main/AndroidManifest.xml:5:22-74
+13    <uses-permission android:name="android.permission.WAKE_LOCK" />
+13-->/home/warden/terminal/app/src/main/AndroidManifest.xml:6:5-68
+13-->/home/warden/terminal/app/src/main/AndroidManifest.xml:6:22-65
+14    <uses-permission android:name="android.permission.USE_BIOMETRIC" /> <!-- suppress DeprecatedClassUsageInspection -->
+14-->[androidx.biometric:biometric:1.1.0] /home/warden/.gradle/caches/transforms-3/83cb5aa7df148986b417f1ecce9944f5/transformed/biometric-1.1.0/AndroidManifest.xml:24:5-72
+14-->[androidx.biometric:biometric:1.1.0] /home/warden/.gradle/caches/transforms-3/83cb5aa7df148986b417f1ecce9944f5/transformed/biometric-1.1.0/AndroidManifest.xml:24:22-69
+15    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+15-->[androidx.biometric:biometric:1.1.0] /home/warden/.gradle/caches/transforms-3/83cb5aa7df148986b417f1ecce9944f5/transformed/biometric-1.1.0/AndroidManifest.xml:27:5-74
+15-->[androidx.biometric:biometric:1.1.0] /home/warden/.gradle/caches/transforms-3/83cb5aa7df148986b417f1ecce9944f5/transformed/biometric-1.1.0/AndroidManifest.xml:27:22-71
+16
+17    <permission
+17-->[androidx.core:core:1.12.0] /home/warden/.gradle/caches/transforms-3/178e4d81b3980cb7c7bb97b557003ff7/transformed/core-1.12.0/AndroidManifest.xml:22:5-24:47
+18        android:name="com.terminalarrow.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+18-->[androidx.core:core:1.12.0] /home/warden/.gradle/caches/transforms-3/178e4d81b3980cb7c7bb97b557003ff7/transformed/core-1.12.0/AndroidManifest.xml:23:9-81
+19        android:protectionLevel="signature" />
+19-->[androidx.core:core:1.12.0] /home/warden/.gradle/caches/transforms-3/178e4d81b3980cb7c7bb97b557003ff7/transformed/core-1.12.0/AndroidManifest.xml:24:9-44
+20
+21    <uses-permission android:name="com.terminalarrow.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+21-->[androidx.core:core:1.12.0] /home/warden/.gradle/caches/transforms-3/178e4d81b3980cb7c7bb97b557003ff7/transformed/core-1.12.0/AndroidManifest.xml:26:5-97
+21-->[androidx.core:core:1.12.0] /home/warden/.gradle/caches/transforms-3/178e4d81b3980cb7c7bb97b557003ff7/transformed/core-1.12.0/AndroidManifest.xml:26:22-94
+22
+23    <application
+23-->/home/warden/terminal/app/src/main/AndroidManifest.xml:8:5-28:19
+24        android:name="com.terminalarrow.app.TerminalArrowApp"
+24-->/home/warden/terminal/app/src/main/AndroidManifest.xml:9:9-41
+25        android:allowBackup="true"
+25-->/home/warden/terminal/app/src/main/AndroidManifest.xml:10:9-35
+26        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+26-->[androidx.core:core:1.12.0] /home/warden/.gradle/caches/transforms-3/178e4d81b3980cb7c7bb97b557003ff7/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
+27        android:extractNativeLibs="false"
+28        android:icon="@mipmap/ic_launcher"
+28-->/home/warden/terminal/app/src/main/AndroidManifest.xml:11:9-43
+29        android:label="Terminal Arrow"
+29-->/home/warden/terminal/app/src/main/AndroidManifest.xml:12:9-39
+30        android:roundIcon="@mipmap/ic_launcher_round"
+30-->/home/warden/terminal/app/src/main/AndroidManifest.xml:13:9-54
+31        android:supportsRtl="true"
+31-->/home/warden/terminal/app/src/main/AndroidManifest.xml:14:9-35
+32        android:theme="@android:style/Theme.Material.Light.NoActionBar" >
+32-->/home/warden/terminal/app/src/main/AndroidManifest.xml:15:9-72
+33        <service
+33-->/home/warden/terminal/app/src/main/AndroidManifest.xml:17:9-113
+34            android:name="com.terminalarrow.app.service.SSHForegroundService"
+34-->/home/warden/terminal/app/src/main/AndroidManifest.xml:17:18-62
+35            android:enabled="true"
+35-->/home/warden/terminal/app/src/main/AndroidManifest.xml:17:63-85
+36            android:exported="false" />
+36-->/home/warden/terminal/app/src/main/AndroidManifest.xml:17:86-110
+37
+38        <activity
+38-->/home/warden/terminal/app/src/main/AndroidManifest.xml:19:9-27:20
+39            android:name="com.terminalarrow.app.MainActivity"
+39-->/home/warden/terminal/app/src/main/AndroidManifest.xml:20:13-41
+40            android:exported="true"
+40-->/home/warden/terminal/app/src/main/AndroidManifest.xml:21:13-36
+41            android:theme="@android:style/Theme.Material.Light.NoActionBar" >
+41-->/home/warden/terminal/app/src/main/AndroidManifest.xml:22:13-76
+42            <intent-filter>
+42-->/home/warden/terminal/app/src/main/AndroidManifest.xml:23:13-26:29
+43                <action android:name="android.intent.action.MAIN" />
+43-->/home/warden/terminal/app/src/main/AndroidManifest.xml:24:17-69
+43-->/home/warden/terminal/app/src/main/AndroidManifest.xml:24:25-66
+44
+45                <category android:name="android.intent.category.LAUNCHER" />
+45-->/home/warden/terminal/app/src/main/AndroidManifest.xml:25:17-77
+45-->/home/warden/terminal/app/src/main/AndroidManifest.xml:25:27-74
+46            </intent-filter>
+47        </activity>
+48
+49        <provider
+49-->[androidx.emoji2:emoji2:1.4.0] /home/warden/.gradle/caches/transforms-3/075b1fffba1a35517960a1fb6ff7a1e1/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:24:9-32:20
+50            android:name="androidx.startup.InitializationProvider"
+50-->[androidx.emoji2:emoji2:1.4.0] /home/warden/.gradle/caches/transforms-3/075b1fffba1a35517960a1fb6ff7a1e1/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:25:13-67
+51            android:authorities="com.terminalarrow.app.androidx-startup"
+51-->[androidx.emoji2:emoji2:1.4.0] /home/warden/.gradle/caches/transforms-3/075b1fffba1a35517960a1fb6ff7a1e1/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:26:13-68
+52            android:exported="false" >
+52-->[androidx.emoji2:emoji2:1.4.0] /home/warden/.gradle/caches/transforms-3/075b1fffba1a35517960a1fb6ff7a1e1/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:27:13-37
+53            <meta-data
+53-->[androidx.emoji2:emoji2:1.4.0] /home/warden/.gradle/caches/transforms-3/075b1fffba1a35517960a1fb6ff7a1e1/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:29:13-31:52
+54                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+54-->[androidx.emoji2:emoji2:1.4.0] /home/warden/.gradle/caches/transforms-3/075b1fffba1a35517960a1fb6ff7a1e1/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:30:17-75
+55                android:value="androidx.startup" />
+55-->[androidx.emoji2:emoji2:1.4.0] /home/warden/.gradle/caches/transforms-3/075b1fffba1a35517960a1fb6ff7a1e1/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:31:17-49
+56            <meta-data
+56-->[androidx.lifecycle:lifecycle-process:2.7.0] /home/warden/.gradle/caches/transforms-3/9406cdd678c0109dabd6aac6b3c89397/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:29:13-31:52
+57                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+57-->[androidx.lifecycle:lifecycle-process:2.7.0] /home/warden/.gradle/caches/transforms-3/9406cdd678c0109dabd6aac6b3c89397/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:30:17-78
+58                android:value="androidx.startup" />
+58-->[androidx.lifecycle:lifecycle-process:2.7.0] /home/warden/.gradle/caches/transforms-3/9406cdd678c0109dabd6aac6b3c89397/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:31:17-49
+59            <meta-data
+59-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:29:13-31:52
+60                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+60-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:30:17-85
+61                android:value="androidx.startup" />
+61-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:31:17-49
+62        </provider>
+63
+64        <service
+64-->[androidx.room:room-runtime:2.6.1] /home/warden/.gradle/caches/transforms-3/5065a0064072a61b33ef41421b23cfdb/transformed/room-runtime-2.6.1/AndroidManifest.xml:24:9-28:63
+65            android:name="androidx.room.MultiInstanceInvalidationService"
+65-->[androidx.room:room-runtime:2.6.1] /home/warden/.gradle/caches/transforms-3/5065a0064072a61b33ef41421b23cfdb/transformed/room-runtime-2.6.1/AndroidManifest.xml:25:13-74
+66            android:directBootAware="true"
+66-->[androidx.room:room-runtime:2.6.1] /home/warden/.gradle/caches/transforms-3/5065a0064072a61b33ef41421b23cfdb/transformed/room-runtime-2.6.1/AndroidManifest.xml:26:13-43
+67            android:exported="false" />
+67-->[androidx.room:room-runtime:2.6.1] /home/warden/.gradle/caches/transforms-3/5065a0064072a61b33ef41421b23cfdb/transformed/room-runtime-2.6.1/AndroidManifest.xml:27:13-37
+68
+69        <uses-library
+69-->[com.amazonaws:aws-android-sdk-core:2.73.0] /home/warden/.gradle/caches/transforms-3/549c43be65bd64cb7da18630b6cba8b6/transformed/jetified-aws-android-sdk-core-2.73.0/AndroidManifest.xml:11:9-13:40
+70            android:name="org.apache.http.legacy"
+70-->[com.amazonaws:aws-android-sdk-core:2.73.0] /home/warden/.gradle/caches/transforms-3/549c43be65bd64cb7da18630b6cba8b6/transformed/jetified-aws-android-sdk-core-2.73.0/AndroidManifest.xml:12:13-50
+71            android:required="false" />
+71-->[com.amazonaws:aws-android-sdk-core:2.73.0] /home/warden/.gradle/caches/transforms-3/549c43be65bd64cb7da18630b6cba8b6/transformed/jetified-aws-android-sdk-core-2.73.0/AndroidManifest.xml:13:13-37
+72
+73        <receiver
+73-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:34:9-52:20
+74            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+74-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:35:13-76
+75            android:directBootAware="false"
+75-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:36:13-44
+76            android:enabled="true"
+76-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:37:13-35
+77            android:exported="true"
+77-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:38:13-36
+78            android:permission="android.permission.DUMP" >
+78-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:39:13-57
+79            <intent-filter>
+79-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:40:13-42:29
+80                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+80-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:41:17-91
+80-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:41:25-88
+81            </intent-filter>
+82            <intent-filter>
+82-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:43:13-45:29
+83                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+83-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:44:17-85
+83-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:44:25-82
+84            </intent-filter>
+85            <intent-filter>
+85-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:46:13-48:29
+86                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+86-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:47:17-88
+86-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:47:25-85
+87            </intent-filter>
+88            <intent-filter>
+88-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:49:13-51:29
+89                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+89-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:50:17-95
+89-->[androidx.profileinstaller:profileinstaller:1.3.0] /home/warden/.gradle/caches/transforms-3/c846cdb1f34221d5c5796572f3e90c51/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:50:25-92
+90            </intent-filter>
+91        </receiver>
+92    </application>
+93
+94</manifest>

@@ -1,0 +1,31 @@
+package com.terminalarrow.app.data
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+data class ForwardingRule(
+    val type: String, // "LOCAL", "REMOTE", "DYNAMIC"
+    val localPort: Int,
+    val remoteHost: String? = null,
+    val remotePort: Int? = null
+)
+
+@Entity(tableName = "connection_profiles")
+data class ConnectionProfile(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val name: String,
+    val host: String,
+    val port: Int = 22,
+    val username: String,
+    val password: String? = null,
+    val keyPath: String? = null,
+    val group: String? = "Default",
+    val forwardingRules: List<ForwardingRule> = emptyList()
+)
+
+@Entity(tableName = "snippets")
+data class Snippet(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val name: String,
+    val command: String
+)

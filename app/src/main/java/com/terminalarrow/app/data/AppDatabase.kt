@@ -1,0 +1,10 @@
+package com.terminalarrow.app.data
+
+import androidx.room.Database
+import androidx.room.RoomDatabase
+
+@Database(entities = [ConnectionProfile::class, Snippet::class], version = 2, exportSchema = false)
+@androidx.room.TypeConverters(Converters::class)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun terminalDao(): TerminalDao
+}

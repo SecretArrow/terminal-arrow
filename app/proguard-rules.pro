@@ -1,0 +1,11 @@
+-dontwarn net.schmizz.**
+-dontwarn org.slf4j.**
+-dontwarn org.bouncycastle.**
+-dontwarn net.i2p.crypto.**
+-keep class net.schmizz.** { *; }
+-keep class org.slf4j.** { *; }
+-keep class org.bouncycastle.** { *; }
+-keep class net.i2p.crypto.** { *; }
+-keep class sun.security.x509.** { *; }
+-dontwarn sun.security.x509.**
+-ignorewarnings
