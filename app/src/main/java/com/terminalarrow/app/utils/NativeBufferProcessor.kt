@@ -10,4 +10,5 @@ class NativeBufferProcessor @Inject constructor() {
     }
 
     external fun processBufferNative(inputText: String): String
+    external fun fastSearchNative(buffer: String, query: String): String
 }

@@ -15,11 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
@@ -27,77 +22,94 @@ import com.terminalarrow.app.ui.theme.ThemeManager
 
 @Composable
 fun TerminalScreen(viewModel: TerminalViewModel, themeManager: ThemeManager) {
-    val theme = themeManager.currentTheme
-    val output by viewModel.terminalOutput.collectAsState()
+    val sessions by viewModel.sessions.collectAsState()
+    val activeSessionId by viewModel.activeSession.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val suggestions by viewModel.suggestions.collectAsState()
-    var inputText by remember { mutableStateOf("") }
-    val listState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
+    
     var isSplitView by remember { mutableStateOf(false) }
-    var isSearchActive by remember { mutableStateOf(false) }
+    var isSearchVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
-
-    LaunchedEffect(output) {
-        coroutineScope.launch {
-            if (output.isNotEmpty()) {
-                listState.animateScrollToItem(Int.MAX_VALUE)
-            }
-        }
-    }
+    val theme = themeManager.currentTheme
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(theme.background)
     ) {
+        if (isSearchVisible) {
+            TextField(
+                value = searchQuery,
+                onValueChange = { viewModel.performSearch(activeSessionId, it) },
+                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                placeholder = { Text("Search buffer...") },
+                trailingIcon = {
+                    IconButton(onClick = { isSearchVisible = false }) {
+                        Icon(Icons.Default.Close, contentDescription = "Close Search")
+                    }
+                },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = theme.background.copy(alpha = 0.8f),
+                    unfocusedContainerColor = theme.background.copy(alpha = 0.5f),
+                    focusedTextColor = theme.foreground,
+                    unfocusedTextColor = theme.foreground
+                )
+            )
+        }
         Row(
             modifier = Modifier.fillMaxWidth().padding(4.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row {
                 Button(onClick = { isSplitView = !isSplitView }) {
-                    Text(if (isSplitView) "Close Split" else "Split View")
+                    Text(if (isSplitView) "Close Split" else "Dual Session")
                 }
-                IconButton(onClick = { isSearchActive = !isSearchActive }) {
+                Spacer(modifier = Modifier.width(8.dp))
+                if (isSplitView) {
+                    Button(onClick = { viewModel.setActiveSession(if (activeSessionId == "primary") "secondary" else "primary") }) {
+                        Text("Switch focus: $activeSessionId")
+                    }
+                }
+            }
+            Row {
+                IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
                     Icon(Icons.Default.Search, contentDescription = "Search", tint = theme.foreground)
                 }
-            }
-            IconButton(onClick = { viewModel.exportTerminalOutput(context) { /* Handle Share */ } }) {
-                Icon(Icons.Default.Share, contentDescription = "Export Log", tint = theme.foreground)
-            }
-        }
-
-        if (isSearchActive) {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { viewModel.setSearchQuery(it) },
-                label = { Text("Search buffer...") },
-                modifier = Modifier.fillMaxWidth().padding(8.dp),
-                textStyle = MaterialTheme.typography.bodySmall.copy(color = theme.foreground)
-            )
-        }
-
-        if (suggestions.isNotEmpty()) {
-            LazyRow(modifier = Modifier.padding(8.dp)) {
-                items(suggestions) { suggestion ->
-                    SuggestionChip(onClick = { 
-                        inputText = suggestion
-                        viewModel.onInputChange(suggestion)
-                    }, label = { Text(suggestion) })
+                IconButton(onClick = { viewModel.exportTerminalOutput(activeSessionId, context) { /* Share */ } }) {
+                    Icon(Icons.Default.Share, contentDescription = "Export", tint = theme.foreground)
                 }
             }
         }
 
         Row(modifier = Modifier.weight(1f)) {
-            TerminalOutput(output, themeManager, listState, Modifier.weight(1f), searchQuery)
+            TerminalCanvas(sessions["primary"] ?: "", themeManager, Modifier.weight(1f))
             if (isSplitView) {
                 Divider(modifier = Modifier.width(1.dp).fillMaxHeight())
-                TerminalOutput("Split Session Active...", themeManager, rememberLazyListState(), Modifier.weight(1f), searchQuery)
+                TerminalCanvas(sessions["secondary"] ?: "", themeManager, Modifier.weight(1f))
             }
         }
 
-        KeyboardToolbar(onKeyClick = { viewModel.onSpecialKey(it) })
+        KeyboardToolbar(onKeyClick = { viewModel.onSpecialKey(activeSessionId, it) })
+
+        var inputText by remember { mutableStateOf("") }
+        
+        if (suggestions.isNotEmpty()) {
+            LazyRow(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(suggestions) { suggestion ->
+                    SuggestionChip(
+                        onClick = {
+                            inputText += suggestion
+                            viewModel.onInputChange(activeSessionId, inputText)
+                        },
+                        label = { Text(suggestion) }
+                    )
+                }
+            }
+        }
 
         Row(
             modifier = Modifier
@@ -109,7 +121,7 @@ fun TerminalScreen(viewModel: TerminalViewModel, themeManager: ThemeManager) {
                 value = inputText,
                 onValueChange = { 
                     inputText = it
-                    viewModel.onInputChange(it)
+                    viewModel.onInputChange(activeSessionId, it)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
@@ -117,46 +129,33 @@ fun TerminalScreen(viewModel: TerminalViewModel, themeManager: ThemeManager) {
                     fontFamily = themeManager.fontFamily,
                     fontSize = themeManager.fontSize.sp
                 ),
-                cursorBrush = androidx.compose.ui.graphics.SolidColor(theme.cursor)
+                cursorBrush = androidx.compose.ui.graphics.SolidColor(theme.cursor),
+                keyboardOptions = androidx.compose.ui.text.input.KeyboardOptions(
+                    imeAction = androidx.compose.ui.text.input.ImeAction.Go
+                ),
+                keyboardActions = androidx.compose.ui.text.input.KeyboardActions(
+                    onGo = {
+                        if (inputText.isNotBlank()) {
+                            viewModel.sendCommand(activeSessionId, inputText + "\n")
+                            inputText = ""
+                        }
+                    }
+                )
             )
         }
     }
 }
 
 @Composable
-fun TerminalOutput(output: String, themeManager: ThemeManager, state: androidx.compose.foundation.lazy.LazyListState, modifier: Modifier, searchQuery: String = "") {
-    val theme = themeManager.currentTheme
-    val annotatedOutput = buildAnnotatedString {
-        if (searchQuery.isEmpty()) {
-            append(output)
-        } else {
-            var start = 0
-            while (start < output.length) {
-                val index = output.indexOf(searchQuery, start, ignoreCase = true)
-                if (index == -1) {
-                    append(output.substring(start))
-                    break
-                }
-                append(output.substring(start, index))
-                withStyle(style = SpanStyle(background = Color.Yellow, color = Color.Black)) {
-                    append(output.substring(index, index + searchQuery.length))
-                }
-                start = index + searchQuery.length
-            }
-        }
-    }
-
-    LazyColumn(
-        modifier = modifier.padding(8.dp),
-        state = state
+fun SuggestionChip(onClick: () -> Unit, label: @Composable () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        modifier = Modifier.padding(vertical = 4.dp)
     ) {
-        item {
-            Text(
-                text = annotatedOutput,
-                color = theme.foreground,
-                fontFamily = themeManager.fontFamily,
-                fontSize = themeManager.fontSize.sp
-            )
+        Box(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)) {
+            label()
         }
     }
 }

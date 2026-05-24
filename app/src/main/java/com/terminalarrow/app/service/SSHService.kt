@@ -1,94 +1,78 @@
 package com.terminalarrow.app.service
 
 import net.schmizz.sshj.SSHClient
-import net.schmizz.sshj.common.IOUtils
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier
 import net.schmizz.sshj.connection.channel.direct.Parameters
-import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder
-import net.schmizz.sshj.connection.channel.forwarded.SocketForwardingConnectListener
 import java.net.InetSocketAddress
 import java.net.ServerSocket
-import java.io.InputStream
 import java.io.OutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
+import java.util.concurrent.ConcurrentHashMap
 
 @Singleton
-class SSHService @Inject constructor() {
-    private var client: SSHClient? = null
-    private var shellStream: OutputStream? = null
+class SSHService @Inject constructor(@dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context) {
+    private val sessions = ConcurrentHashMap<String, SessionContainer>()
 
-    suspend fun connect(profile: com.terminalarrow.app.data.ConnectionProfile, onOutput: (String) -> Unit) = withContext(Dispatchers.IO) {
-        var retryCount = 0
-        var connected = false
+    fun getContext(): android.content.Context = context
+
+    data class SessionContainer(
+        val client: SSHClient,
+        val shellStream: OutputStream,
+        val scope: CoroutineScope
+    )
+
+    suspend fun connect(
+        sessionId: String,
+        profile: com.terminalarrow.app.data.ConnectionProfile,
+        onOutput: (String) -> Unit
+    ) = withContext(Dispatchers.IO) {
+        val client = SSHClient()
+        client.addHostKeyVerifier(PromiscuousVerifier())
+        client.timeout = 10000
         
-        while (retryCount < 3 && !connected) {
-            client = SSHClient()
-            client?.addHostKeyVerifier(PromiscuousVerifier())
-            client?.timeout = 10000
+        try {
+            client.connect(profile.host, profile.port)
+            if (profile.password != null) {
+                client.authPassword(profile.username, profile.password)
+            }
+
+            val session = client.startSession()
+            session.allocateDefaultPTY()
+            val shell = session.startShell()
+            val outputStream = shell.outputStream
             
-            try {
-                client?.connect(profile.host, profile.port)
-                if (profile.password != null) {
-                    client?.authPassword(profile.username, profile.password)
-                }
-                
-                // Port Forwarding
-                profile.forwardingRules.forEach { rule ->
-                    try {
-                        when (rule.type) {
-                            "LOCAL" -> {
-                                client?.newLocalPortForwarder(Parameters("0.0.0.0", rule.localPort, rule.remoteHost ?: "localhost", rule.remotePort ?: 0), ServerSocket(rule.localPort))?.listen()
-                                onOutput("Local Forward: ${rule.localPort} -> ${rule.remoteHost}:${rule.remotePort}\n")
-                            }
-                            "REMOTE" -> {
-                                client?.getRemotePortForwarder()?.bind(
-                                    RemotePortForwarder.Forward(rule.remotePort ?: 0),
-                                    SocketForwardingConnectListener(InetSocketAddress("localhost", rule.localPort))
-                                )
-                                onOutput("Remote Forward: ${rule.remotePort} -> localhost:${rule.localPort}\n")
-                            }
-                        }
-                    } catch (e: Exception) {
-                        onOutput("Forward Error: ${e.message}\n")
-                    }
-                }
+            val sessionScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+            sessions[sessionId] = SessionContainer(client, outputStream, sessionScope)
 
-                val session = client?.startSession()
-                session?.allocateDefaultPTY()
-                val shell = session?.startShell()
-                shellStream = shell?.outputStream
-                
-                connected = true
-                onOutput("Connected to ${profile.host}\n")
-
-                val inputStream = shell?.inputStream
-                val buffer = ByteArray(1024)
+            sessionScope.launch {
+                val inputStream = shell.inputStream
+                val buffer = ByteArray(2048)
                 var read: Int
-                while (inputStream?.read(buffer).also { read = it ?: -1 } != -1) {
+                while (isActive && inputStream.read(buffer).also { read = it } != -1) {
                     onOutput(String(buffer, 0, read))
                 }
-            } catch (e: Exception) {
-                retryCount++
-                onOutput("Connection attempt $retryCount failed: ${e.message}\n")
-                if (retryCount < 3) delay(2000)
-            } finally {
-                if (!connected) disconnect()
             }
+        } catch (e: Exception) {
+            onOutput("Error: ${e.message}\n")
         }
     }
 
-    fun sendCommand(command: String) {
-        shellStream?.write(command.toByteArray())
-        shellStream?.flush()
+    fun sendCommand(sessionId: String, command: String) {
+        sessions[sessionId]?.shellStream?.write(command.toByteArray())
+        sessions[sessionId]?.shellStream?.flush()
     }
 
-    fun disconnect() {
-        client?.disconnect()
-        client = null
-        shellStream = null
+    fun disconnect(sessionId: String) {
+        sessions[sessionId]?.let {
+            it.scope.cancel()
+            it.client.disconnect()
+            sessions.remove(sessionId)
+        }
+    }
+
+    fun disconnectAll() {
+        sessions.keys.forEach { disconnect(it) }
     }
 }

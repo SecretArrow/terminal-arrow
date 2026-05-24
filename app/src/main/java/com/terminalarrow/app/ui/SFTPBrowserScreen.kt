@@ -26,7 +26,14 @@ fun SFTPBrowserScreen(viewModel: SFTPViewModel, onFileClick: (String) -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(currentPath) },
+                title = { 
+                    Column {
+                        Text(currentPath.split("/").last().ifEmpty { "/" })
+                        if (viewModel.isInsideArchive.collectAsState().value) {
+                            Text("Inside Archive", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = { viewModel.navigateUp() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Up")
@@ -48,31 +55,39 @@ fun SFTPBrowserScreen(viewModel: SFTPViewModel, onFileClick: (String) -> Unit) {
             LazyColumn(modifier = Modifier.padding(padding)) {
                 items(files) { file ->
                     val isDir = file.isDirectory
+                    val isArchive = file.isArchive
                     ListItem(
                         headlineContent = { Text(file.name) },
                         leadingContent = {
                             Icon(
-                                if (isDir) Icons.Default.Folder else Icons.Default.Description,
-                                contentDescription = null
+                                when {
+                                    isDir -> Icons.Default.Folder
+                                    isArchive -> Icons.Default.Inventory // Icon for zip/tar
+                                    else -> Icons.Default.Description
+                                },
+                                contentDescription = null,
+                                tint = if (isArchive) MaterialTheme.colorScheme.tertiary else LocalContentColor.current
                             )
                         },
                         modifier = Modifier.clickable {
-                            if (isDir) {
-                                viewModel.loadPath(file.path)
-                            } else {
-                                onFileClick(file.path)
+                            when {
+                                isArchive -> viewModel.navigateIntoArchive(file.path)
+                                isDir -> viewModel.loadPath(file.path)
+                                else -> onFileClick(file.path)
                             }
                         },
                         trailingContent = {
-                            Row {
-                                IconButton(onClick = { 
-                                    showRenameDialog = file.path
-                                    newName = file.name
-                                }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Rename", modifier = Modifier.size(18.dp))
-                                }
-                                IconButton(onClick = { viewModel.deleteFile(file.path) }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Delete", modifier = Modifier.size(18.dp))
+                            if (!viewModel.isInsideArchive.collectAsState().value) {
+                                Row {
+                                    IconButton(onClick = { 
+                                        showRenameDialog = file.path
+                                        newName = file.name
+                                    }) {
+                                        Icon(Icons.Default.Edit, contentDescription = "Rename", modifier = Modifier.size(18.dp))
+                                    }
+                                    IconButton(onClick = { viewModel.deleteFile(file.path) }) {
+                                        Icon(Icons.Default.Delete, contentDescription = "Delete", modifier = Modifier.size(18.dp))
+                                    }
                                 }
                             }
                         }

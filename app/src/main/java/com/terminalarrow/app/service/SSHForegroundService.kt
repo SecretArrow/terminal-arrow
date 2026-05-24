@@ -20,22 +20,28 @@ class SSHForegroundService : Service() {
             .setContentTitle("Terminal Arrow Active")
             .setContentText("SSH connection is running in the background")
             .setSmallIcon(android.R.drawable.stat_notify_sync)
+            .setOngoing(true)
             .build()
 
         startForeground(1, notification)
 
-        // Wake Lock to keep CPU alive
+        // Wake Lock to keep CPU alive indefinitely while service is running
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TerminalArrow::SSH")
-        wakeLock?.acquire(10*60*1000L /*10 minutes*/)
+        wakeLock?.acquire()
 
         return START_STICKY
     }
 
-    override fun onDestroy() {
-        wakeLock?.release()
-        super.onDestroy()
-    }
+    companion object {
+        fun start(context: Context) {
+            val intent = Intent(context, SSHForegroundService::class.java)
+            context.startForegroundService(intent)
+        }
 
-    override fun onBind(intent: Intent?): IBinder? = null
+        fun stop(context: Context) {
+            val intent = Intent(context, SSHForegroundService::class.java)
+            context.stopService(intent)
+        }
+    }
 }
