@@ -11,8 +11,8 @@
       "type": "UNIVERSAL",
       "filters": [],
       "attributes": [],
-      "versionCode": 3,
-      "versionName": "1.2",
+      "versionCode": 5,
+      "versionName": "1.4",
       "outputFile": "resources-universalRelease.ap_"
     },
     {
@@ -24,22 +24,9 @@
         }
       ],
       "attributes": [],
-      "versionCode": 3,
-      "versionName": "1.2",
+      "versionCode": 5,
+      "versionName": "1.4",
       "outputFile": "resources-armeabi-v7aRelease.ap_"
-    },
-    {
-      "type": "ONE_OF_MANY",
-      "filters": [
-        {
-          "filterType": "ABI",
-          "value": "x86_64"
-        }
-      ],
-      "attributes": [],
-      "versionCode": 3,
-      "versionName": "1.2",
-      "outputFile": "resources-x86_64Release.ap_"
     },
     {
       "type": "ONE_OF_MANY",
@@ -50,8 +37,8 @@
         }
       ],
       "attributes": [],
-      "versionCode": 3,
-      "versionName": "1.2",
+      "versionCode": 5,
+      "versionName": "1.4",
       "outputFile": "resources-arm64-v8aRelease.ap_"
     },
     {
@@ -63,9 +50,22 @@
         }
       ],
       "attributes": [],
-      "versionCode": 3,
-      "versionName": "1.2",
+      "versionCode": 5,
+      "versionName": "1.4",
       "outputFile": "resources-x86Release.ap_"
+    },
+    {
+      "type": "ONE_OF_MANY",
+      "filters": [
+        {
+          "filterType": "ABI",
+          "value": "x86_64"
+        }
+      ],
+      "attributes": [],
+      "versionCode": 5,
+      "versionName": "1.4",
+      "outputFile": "resources-x86_64Release.ap_"
     }
   ],
   "elementType": "File"

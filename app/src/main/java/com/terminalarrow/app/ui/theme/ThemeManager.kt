@@ -1,6 +1,7 @@
 package com.terminalarrow.app.ui.theme
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
@@ -27,12 +28,23 @@ class ThemeManager @Inject constructor() {
     var currentTheme by mutableStateOf(themes[0])
     
     var fontSize by mutableStateOf(14)
-    var fontFamily by mutableStateOf(FontFamily.Monospace)
+    var fontFamily: FontFamily by mutableStateOf(FontFamily.Monospace)
 
-    val fontFamilies = mapOf(
+    var fontFamilies = mutableStateMapOf<String, FontFamily>(
         "Monospace" to FontFamily.Monospace,
         "Serif" to FontFamily.Serif,
         "SansSerif" to FontFamily.SansSerif,
         "Cursive" to FontFamily.Cursive
     )
+
+    fun addCustomFont(name: String, file: java.io.File) {
+        try {
+            val customFont = androidx.compose.ui.text.font.Font(file)
+            val customFamily = FontFamily(customFont)
+            fontFamilies[name] = customFamily
+            fontFamily = customFamily
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 }

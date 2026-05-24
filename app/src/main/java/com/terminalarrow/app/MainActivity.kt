@@ -98,7 +98,7 @@ fun TerminalArrowNavigation(themeManager: ThemeManager) {
             )
         }
         composable("terminal") {
-            TerminalScreen(terminalViewModel, themeManager)
+            TerminalScreen(terminalViewModel, snippetViewModel, themeManager)
         }
         composable("sftp") {
             SFTPBrowserScreen(sftpViewModel) { path ->

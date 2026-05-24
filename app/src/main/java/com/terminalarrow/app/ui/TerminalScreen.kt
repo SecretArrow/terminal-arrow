@@ -1,5 +1,6 @@
 package com.terminalarrow.app.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.foundation.text.KeyboardOptions
@@ -22,23 +24,46 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import com.terminalarrow.app.ui.snippets.SnippetViewModel
 import kotlinx.coroutines.launch
 import com.terminalarrow.app.ui.theme.ThemeManager
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TerminalScreen(viewModel: TerminalViewModel, themeManager: ThemeManager) {
+fun TerminalScreen(viewModel: TerminalViewModel, snippetViewModel: SnippetViewModel, themeManager: ThemeManager) {
     val sessions by viewModel.sessions.collectAsState()
     val activeSessionId by viewModel.activeSession.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val suggestions by viewModel.suggestions.collectAsState()
+    val snippets by snippetViewModel.snippets.collectAsState()
     
     var isSplitView by remember { mutableStateOf(false) }
     var isSearchVisible by remember { mutableStateOf(false) }
+    var showSnippets by remember { mutableStateOf(false) }
+    var isImmersive by remember { mutableStateOf(false) }
+    
     val context = LocalContext.current
+    val activity = context as? android.app.Activity
     val theme = themeManager.currentTheme
+    
+    LaunchedEffect(isImmersive) {
+        activity?.window?.let { window ->
+            val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+            if (isImmersive) {
+                insetsController.hide(WindowInsetsCompat.Type.systemBars())
+                insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            } else {
+                insetsController.show(WindowInsetsCompat.Type.systemBars())
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -81,6 +106,12 @@ fun TerminalScreen(viewModel: TerminalViewModel, themeManager: ThemeManager) {
                 }
             }
             Row {
+                IconButton(onClick = { showSnippets = true }) {
+                    Icon(Icons.Default.Add, contentDescription = "Snippets", tint = theme.foreground)
+                }
+                IconButton(onClick = { isImmersive = !isImmersive }) {
+                    Icon(Icons.Default.Search, contentDescription = "Immersive", tint = theme.foreground) // using search as placeholder, will fix if needed
+                }
                 IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
                     Icon(Icons.Default.Search, contentDescription = "Search", tint = theme.foreground)
                 }
@@ -171,7 +202,25 @@ fun TerminalScreen(viewModel: TerminalViewModel, themeManager: ThemeManager) {
                     inputText = it
                     viewModel.onInputChange(activeSessionId, it)
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().onKeyEvent { keyEvent ->
+                    if (keyEvent.type == KeyEventType.KeyDown) {
+                        if (keyEvent.isCtrlPressed) {
+                            when (keyEvent.key) {
+                                Key.C -> { viewModel.sendCommand(activeSessionId, "\u0003"); return@onKeyEvent true }
+                                Key.D -> { viewModel.sendCommand(activeSessionId, "\u0004"); return@onKeyEvent true }
+                                Key.L -> { viewModel.sendCommand(activeSessionId, "\u000C"); return@onKeyEvent true }
+                                Key.Z -> { viewModel.sendCommand(activeSessionId, "\u001A"); return@onKeyEvent true }
+                            }
+                        } else if (keyEvent.key == Key.Tab) {
+                            viewModel.sendCommand(activeSessionId, "\t")
+                            return@onKeyEvent true
+                        } else if (keyEvent.key == Key.Escape) {
+                            viewModel.sendCommand(activeSessionId, "\u001B")
+                            return@onKeyEvent true
+                        }
+                    }
+                    false
+                },
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
                     color = theme.foreground,
                     fontFamily = themeManager.fontFamily,
@@ -190,6 +239,32 @@ fun TerminalScreen(viewModel: TerminalViewModel, themeManager: ThemeManager) {
                     }
                 )
             )
+        }
+    }
+
+    if (showSnippets) {
+        ModalBottomSheet(onDismissRequest = { showSnippets = false }) {
+            LazyColumn(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                item {
+                    Text("Quick Snippets", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 8.dp))
+                }
+                items(snippets) { snippet ->
+                    ListItem(
+                        headlineContent = { Text(snippet.name) },
+                        supportingContent = { Text(snippet.command) },
+                        modifier = Modifier.clickable {
+                            viewModel.sendCommand(activeSessionId, snippet.command + "\n")
+                            showSnippets = false
+                        }
+                    )
+                    Divider()
+                }
+                if (snippets.isEmpty()) {
+                    item {
+                        Text("No snippets found. Add them from the main menu.", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                    }
+                }
+            }
         }
     }
 }
