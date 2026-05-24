@@ -6629,7 +6629,6 @@ androidx.compose.material.icons.filled.EdgesensorHighKt
 androidx.compose.material.icons.filled.EdgesensorLowKt
 androidx.compose.material.icons.filled.EditAttributesKt
 androidx.compose.material.icons.filled.EditCalendarKt
-androidx.compose.material.icons.filled.EditKt
 androidx.compose.material.icons.filled.EditLocationAltKt
 androidx.compose.material.icons.filled.EditLocationKt
 androidx.compose.material.icons.filled.EditNoteKt
@@ -7520,7 +7519,6 @@ androidx.compose.material.icons.filled.RecyclingKt
 androidx.compose.material.icons.filled.RedeemKt
 androidx.compose.material.icons.filled.RedoKt
 androidx.compose.material.icons.filled.ReduceCapacityKt
-androidx.compose.material.icons.filled.RefreshKt
 androidx.compose.material.icons.filled.RememberMeKt
 androidx.compose.material.icons.filled.RemoveCircleKt
 androidx.compose.material.icons.filled.RemoveCircleOutlineKt
@@ -44615,7 +44613,6 @@ androidx.compose.animation.AnimatedContentKt$AnimatedContent$6$1$1$$InternalSynt
 androidx.compose.animation.AnimatedContentKt$AnimatedContent$6$1$1$1
 androidx.compose.animation.AnimatedContentKt$AnimatedContent$6$1$1:
     public static kotlin.jvm.functions.Function1 invoke()
-    public final void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int)
 androidx.compose.animation.AnimatedContentKt$AnimatedContent$6$1$3:
     public final java.lang.Boolean invoke(java.lang.Object)
     public final java.lang.Object invoke(int)
@@ -46944,11 +46941,13 @@ androidx.compose.foundation.text.TextFieldCursorKt$cursor$1$1:
 androidx.compose.foundation.text.TextFieldCursorKt$cursor$1$2:
     public final androidx.compose.animation.ContentTransform invoke()
     public final androidx.compose.runtime.DisposableEffectResult invoke(androidx.compose.runtime.DisposableEffectScope)
+    public final void invoke(androidx.compose.foundation.lazy.LazyListScope)
     public final void invoke(androidx.compose.ui.graphics.drawscope.ContentDrawScope)
     public final void invoke(androidx.compose.ui.graphics.drawscope.DrawScope)
     public final void invoke$10()
 androidx.compose.foundation.text.TextFieldCursorKt$cursor$1:
     public final androidx.compose.ui.Modifier invoke(androidx.compose.ui.Modifier,androidx.compose.runtime.Composer)
+    public final void invoke(androidx.compose.foundation.layout.PaddingValues,androidx.compose.runtime.Composer,int)
     public final void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int)
     public final void invoke(androidx.compose.runtime.Applier,androidx.compose.runtime.SlotWriter,androidx.compose.runtime.CompositionImpl$RememberEventDispatcher)
 androidx.compose.foundation.text.TextFieldCursorKt$cursorAnimationSpec$1
@@ -47442,11 +47441,15 @@ androidx.compose.material.icons.filled.DeleteKt:
     static void <clinit>()
 androidx.compose.material.icons.filled.DescriptionKt:
     static void <clinit>()
+androidx.compose.material.icons.filled.EditKt:
+    static void <clinit>()
 androidx.compose.material.icons.filled.FolderKt:
     static void <clinit>()
 androidx.compose.material.icons.filled.InfoKt:
     static void <clinit>()
 androidx.compose.material.icons.filled.PaletteKt:
+    static void <clinit>()
+androidx.compose.material.icons.filled.RefreshKt:
     static void <clinit>()
 androidx.compose.material.icons.filled.SaveKt:
     static void <clinit>()
@@ -57268,6 +57271,7 @@ androidx.navigation.NavController$navInflater$2:
     public static androidx.navigation.NavInflater invoke()
     public static androidx.sqlite.db.SupportSQLiteStatement invoke()
     public static androidx.sqlite.db.framework.FrameworkSQLiteOpenHelper$OpenHelper invoke()
+    public final void invoke()
     public static androidx.navigation.NavHostController invoke$1()
 androidx.navigation.NavController$navigate$5
 androidx.navigation.NavController$onBackPressedCallback$1
@@ -59102,10 +59106,16 @@ com.terminalarrow.app.di.DatabaseModule_ProvideTerminalDaoFactory
 com.terminalarrow.app.service.SFTPService$connect$2:
     public int label
     public final java.lang.Object invoke$2()
+com.terminalarrow.app.service.SFTPService$deleteFile$2:
+    public int label
+    public final java.lang.Object invoke$2()
 com.terminalarrow.app.service.SFTPService$downloadFile$2:
     public int label
     public final java.lang.Object invoke$2()
 com.terminalarrow.app.service.SFTPService$listFiles$2:
+    public int label
+    public final java.lang.Object invoke$2()
+com.terminalarrow.app.service.SFTPService$renameFile$2:
     public int label
     public final java.lang.Object invoke$2()
 com.terminalarrow.app.service.SFTPService$uploadFile$2:
@@ -59115,20 +59125,22 @@ com.terminalarrow.app.service.SFTPService:
     public static final int $stable
     static void <clinit>()
     public static java.lang.Object connect()
+    public static java.lang.Object deleteFile()
     public static void disconnect()
     public static java.lang.Object downloadFile()
     public static java.lang.Object listFiles()
+    public static java.lang.Object renameFile()
     public static java.lang.Object uploadFile()
 com.terminalarrow.app.service.SSHForegroundService:
     public static final int $stable
     static void <clinit>()
 com.terminalarrow.app.service.SSHService$connect$2:
-    public int label
     public final java.lang.Object invoke$2()
 com.terminalarrow.app.service.SSHService:
     public static final int $stable
     static void <clinit>()
     public static java.lang.Object connect()
+    public final void disconnect()
     public static void sendCommand()
 com.terminalarrow.app.ui.AboutScreenKt$AboutScreen$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
@@ -59191,9 +59203,21 @@ com.terminalarrow.app.ui.ComposableSingletons$ProfileListScreenKt:
     public static kotlin.jvm.functions.Function2 getLambda-8$app_release()
     public static kotlin.jvm.functions.Function2 getLambda-9$app_release()
 com.terminalarrow.app.ui.ComposableSingletons$SFTPBrowserScreenKt$lambda-1$1
+com.terminalarrow.app.ui.ComposableSingletons$SFTPBrowserScreenKt$lambda-2$1
+com.terminalarrow.app.ui.ComposableSingletons$SFTPBrowserScreenKt$lambda-3$1
+com.terminalarrow.app.ui.ComposableSingletons$SFTPBrowserScreenKt$lambda-4$1
+com.terminalarrow.app.ui.ComposableSingletons$SFTPBrowserScreenKt$lambda-5$1
+com.terminalarrow.app.ui.ComposableSingletons$SFTPBrowserScreenKt$lambda-6$1
+com.terminalarrow.app.ui.ComposableSingletons$SFTPBrowserScreenKt$lambda-7$1
 com.terminalarrow.app.ui.ComposableSingletons$SFTPBrowserScreenKt:
     public static final com.terminalarrow.app.ui.ComposableSingletons$SFTPBrowserScreenKt INSTANCE
     public static kotlin.jvm.functions.Function2 getLambda-1$app_release()
+    public static kotlin.jvm.functions.Function2 getLambda-2$app_release()
+    public static kotlin.jvm.functions.Function2 getLambda-3$app_release()
+    public static kotlin.jvm.functions.Function2 getLambda-4$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-5$app_release()
+    public static kotlin.jvm.functions.Function2 getLambda-6$app_release()
+    public static kotlin.jvm.functions.Function2 getLambda-7$app_release()
 com.terminalarrow.app.ui.ComposableSingletons$TerminalScreenKt$lambda-1$1
 com.terminalarrow.app.ui.ComposableSingletons$TerminalScreenKt:
     public static final com.terminalarrow.app.ui.ComposableSingletons$TerminalScreenKt INSTANCE
@@ -59259,8 +59283,6 @@ com.terminalarrow.app.ui.ProfileListScreenKt$ProfileListScreen$3$1$1$2$1:
 com.terminalarrow.app.ui.ProfileListScreenKt$ProfileListScreen$3$1$1$2$3
 com.terminalarrow.app.ui.ProfileListScreenKt$ProfileListScreen$3$1$1$2$4$1$1
 com.terminalarrow.app.ui.ProfileListScreenKt$ProfileListScreen$3$1$1$2$4$1$2
-com.terminalarrow.app.ui.ProfileListScreenKt$ProfileListScreen$3$1$1$2$4:
-    public final void invoke(androidx.compose.runtime.Composer,int)
 com.terminalarrow.app.ui.ProfileListScreenKt$ProfileListScreen$3$1$invoke$lambda$1$$inlined$items$default$1
 com.terminalarrow.app.ui.ProfileListScreenKt$ProfileListScreen$3$1$invoke$lambda$1$$inlined$items$default$3
 com.terminalarrow.app.ui.ProfileListScreenKt$ProfileListScreen$3$1$invoke$lambda$1$$inlined$items$default$4
@@ -59283,32 +59305,47 @@ com.terminalarrow.app.ui.ProfileViewModel:
 com.terminalarrow.app.ui.ProfileViewModel_HiltModules$KeyModule
 com.terminalarrow.app.ui.ProfileViewModel_HiltModules_KeyModule_ProvideFactory
 com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$1$1
-com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$1$2$1
 com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$1$2
+com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$1$3$1
+com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$1$3
 com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$1
 com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$2$2$1$1
 com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$2$2$1$2
 com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$2$2$1$3:
     public final void invoke(androidx.compose.runtime.Composer,int)
+com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$2$2$1$4$1$1
+com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$2$2$1$4$1$2
+com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$2$2$1$4
 com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$2$2$invoke$$inlined$items$default$1
 com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$2$2$invoke$$inlined$items$default$3
-com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$2$2$invoke$$inlined$items$default$4
+com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$2$2$invoke$$inlined$items$default$4:
+    public final void invoke(androidx.compose.foundation.lazy.LazyItemScopeImpl,int,androidx.compose.runtime.Composer,int)
 com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$2$2
-com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$2
+com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$2$3$1
+com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$2$4$1
+com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$2$4
+com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$2$5$1$1
 com.terminalarrow.app.ui.SFTPBrowserScreenKt$SFTPBrowserScreen$3
 com.terminalarrow.app.ui.SFTPBrowserScreenKt
 com.terminalarrow.app.ui.SFTPViewModel$connectAndList$1:
     public final java.lang.Object invoke$2()
+com.terminalarrow.app.ui.SFTPViewModel$deleteFile$1:
+    public final java.lang.Object invoke$2()
 com.terminalarrow.app.ui.SFTPViewModel$loadPath$1:
+    public final java.lang.Object invoke$2()
+com.terminalarrow.app.ui.SFTPViewModel$renameFile$1:
     public final java.lang.Object invoke$2()
 com.terminalarrow.app.ui.SFTPViewModel:
     public static final int $stable
     static void <clinit>()
     public static void connectAndList()
+    public static void deleteFile()
     public static kotlinx.coroutines.flow.StateFlow getCurrentPath()
     public static kotlinx.coroutines.flow.StateFlow getFiles()
     public static kotlinx.coroutines.flow.StateFlow isLoading()
     public static void navigateUp()
+    public static void refresh()
+    public static void renameFile()
 com.terminalarrow.app.ui.SFTPViewModel_HiltModules$KeyModule
 com.terminalarrow.app.ui.SFTPViewModel_HiltModules_KeyModule_ProvideFactory
 com.terminalarrow.app.ui.TerminalScreenKt$TerminalOutput$1$1
@@ -59428,8 +59465,7 @@ com.terminalarrow.app.ui.snippets.SnippetScreenKt$SnippetScreen$2$3
 com.terminalarrow.app.ui.snippets.SnippetScreenKt$SnippetScreen$2$4$1$1$1
 com.terminalarrow.app.ui.snippets.SnippetScreenKt$SnippetScreen$2$4$1$2$1
 com.terminalarrow.app.ui.snippets.SnippetScreenKt$SnippetScreen$2$4
-com.terminalarrow.app.ui.snippets.SnippetScreenKt$SnippetScreen$2:
-    public final void invoke(androidx.compose.foundation.layout.PaddingValues,androidx.compose.runtime.Composer,int)
+com.terminalarrow.app.ui.snippets.SnippetScreenKt$SnippetScreen$2
 com.terminalarrow.app.ui.snippets.SnippetScreenKt$SnippetScreen$3
 com.terminalarrow.app.ui.snippets.SnippetScreenKt
 com.terminalarrow.app.ui.snippets.SnippetViewModel$deleteSnippet$1:

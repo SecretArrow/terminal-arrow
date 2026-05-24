@@ -27,6 +27,7 @@ import com.terminalarrow.app.ui.snippets.SnippetViewModel_HiltModules_KeyModule_
 import com.terminalarrow.app.ui.theme.ThemeManager;
 import com.terminalarrow.app.utils.BackupManager;
 import com.terminalarrow.app.utils.BiometricHelper;
+import com.terminalarrow.app.utils.NativeBufferProcessor;
 import com.terminalarrow.app.utils.VibratorHelper;
 import dagger.hilt.android.ActivityRetainedLifecycle;
 import dagger.hilt.android.ViewModelLifecycle;
@@ -498,7 +499,7 @@ public final class DaggerTerminalArrowApp_HiltComponents_SingletonC {
           return (T) new SnippetViewModel(singletonCImpl.terminalDao());
 
           case 5: // com.terminalarrow.app.ui.TerminalViewModel 
-          return (T) new TerminalViewModel(singletonCImpl.sSHServiceProvider.get(), singletonCImpl.vibratorHelperProvider.get());
+          return (T) new TerminalViewModel(singletonCImpl.sSHServiceProvider.get(), singletonCImpl.vibratorHelperProvider.get(), singletonCImpl.nativeBufferProcessorProvider.get());
 
           default: throw new AssertionError(id);
         }
@@ -594,6 +595,8 @@ public final class DaggerTerminalArrowApp_HiltComponents_SingletonC {
 
     private Provider<VibratorHelper> vibratorHelperProvider;
 
+    private Provider<NativeBufferProcessor> nativeBufferProcessorProvider;
+
     private SingletonCImpl(ApplicationContextModule applicationContextModuleParam) {
       this.applicationContextModule = applicationContextModuleParam;
       initialize(applicationContextModuleParam);
@@ -613,6 +616,7 @@ public final class DaggerTerminalArrowApp_HiltComponents_SingletonC {
       this.backupManagerProvider = DoubleCheck.provider(new SwitchingProvider<BackupManager>(singletonCImpl, 4));
       this.sSHServiceProvider = DoubleCheck.provider(new SwitchingProvider<SSHService>(singletonCImpl, 5));
       this.vibratorHelperProvider = DoubleCheck.provider(new SwitchingProvider<VibratorHelper>(singletonCImpl, 6));
+      this.nativeBufferProcessorProvider = DoubleCheck.provider(new SwitchingProvider<NativeBufferProcessor>(singletonCImpl, 7));
     }
 
     @Override
@@ -668,6 +672,9 @@ public final class DaggerTerminalArrowApp_HiltComponents_SingletonC {
 
           case 6: // com.terminalarrow.app.utils.VibratorHelper 
           return (T) new VibratorHelper(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 7: // com.terminalarrow.app.utils.NativeBufferProcessor 
+          return (T) new NativeBufferProcessor();
 
           default: throw new AssertionError(id);
         }

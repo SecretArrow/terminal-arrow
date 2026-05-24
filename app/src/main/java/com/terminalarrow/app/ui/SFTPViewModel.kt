@@ -48,6 +48,28 @@ class SFTPViewModel @Inject constructor(
         loadPath(parent)
     }
 
+    fun deleteFile(path: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            sftpService.deleteFile(path)
+            loadPath(_currentPath.value)
+        }
+    }
+
+    fun renameFile(oldPath: String, newName: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            val parent = oldPath.substringBeforeLast("/", "")
+            val newPath = if (parent.isEmpty()) "/$newName" else "$parent/$newName"
+            sftpService.renameFile(oldPath, newPath)
+            loadPath(_currentPath.value)
+        }
+    }
+
+    fun refresh() {
+        loadPath(_currentPath.value)
+    }
+
     override fun onCleared() {
         super.onCleared()
         sftpService.disconnect()

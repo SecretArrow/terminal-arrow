@@ -5,15 +5,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -22,6 +19,9 @@ fun SFTPBrowserScreen(viewModel: SFTPViewModel, onFileClick: (String) -> Unit) {
     val files by viewModel.files.collectAsState()
     val currentPath by viewModel.currentPath.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    
+    var showRenameDialog by remember { mutableStateOf<String?>(null) }
+    var newName by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -30,6 +30,11 @@ fun SFTPBrowserScreen(viewModel: SFTPViewModel, onFileClick: (String) -> Unit) {
                 navigationIcon = {
                     IconButton(onClick = { viewModel.navigateUp() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Up")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { viewModel.refresh() }) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
                 }
             )
@@ -57,11 +62,40 @@ fun SFTPBrowserScreen(viewModel: SFTPViewModel, onFileClick: (String) -> Unit) {
                             } else {
                                 onFileClick(file.path)
                             }
+                        },
+                        trailingContent = {
+                            Row {
+                                IconButton(onClick = { 
+                                    showRenameDialog = file.path
+                                    newName = file.name
+                                }) {
+                                    Icon(Icons.Default.Edit, contentDescription = "Rename", modifier = Modifier.size(18.dp))
+                                }
+                                IconButton(onClick = { viewModel.deleteFile(file.path) }) {
+                                    Icon(Icons.Default.Delete, contentDescription = "Delete", modifier = Modifier.size(18.dp))
+                                }
+                            }
                         }
                     )
                     Divider()
                 }
             }
+        }
+        
+        if (showRenameDialog != null) {
+            AlertDialog(
+                onDismissRequest = { showRenameDialog = null },
+                title = { Text("Rename File") },
+                text = {
+                    OutlinedTextField(value = newName, onValueChange = { newName = it }, label = { Text("New Name") })
+                },
+                confirmButton = {
+                    Button(onClick = {
+                        showRenameDialog?.let { viewModel.renameFile(it, newName) }
+                        showRenameDialog = null
+                    }) { Text("Rename") }
+                }
+            )
         }
     }
 }

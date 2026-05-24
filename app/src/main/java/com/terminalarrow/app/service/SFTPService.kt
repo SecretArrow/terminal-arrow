@@ -39,6 +39,14 @@ class SFTPService @Inject constructor() {
         sftpClient?.put(localPath, remotePath)
     }
 
+    suspend fun deleteFile(path: String) = withContext(Dispatchers.IO) {
+        sftpClient?.rm(path)
+    }
+
+    suspend fun renameFile(oldPath: String, newPath: String) = withContext(Dispatchers.IO) {
+        sftpClient?.rename(oldPath, newPath)
+    }
+
     fun disconnect() {
         sftpClient?.close()
         client?.disconnect()

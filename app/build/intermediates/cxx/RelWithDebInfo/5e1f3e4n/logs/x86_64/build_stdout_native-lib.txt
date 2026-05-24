@@ -1,3 +1,2 @@
 ninja: Entering directory `/home/warden/terminal/app/.cxx/RelWithDebInfo/5e1f3e4n/x86_64'
-[1/2] Building CXX object CMakeFiles/native-lib.dir/native-lib.cpp.o
-[2/2] Linking CXX shared library /home/warden/terminal/app/build/intermediates/cxx/RelWithDebInfo/5e1f3e4n/obj/x86_64/libnative-lib.so
+ninja: no work to do.
