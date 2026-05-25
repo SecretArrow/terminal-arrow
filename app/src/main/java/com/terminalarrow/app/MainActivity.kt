@@ -37,6 +37,10 @@ class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
+        }
+        
         if (biometricHelper.isBiometricAvailable(this)) {
             biometricHelper.showBiometricPrompt(this, 
                 onSuccess = { setupContent() },

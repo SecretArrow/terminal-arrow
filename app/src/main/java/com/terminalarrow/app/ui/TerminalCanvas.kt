@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
@@ -30,16 +31,17 @@ fun TerminalCanvas(
     val density = LocalDensity.current.density
     
     val listState = rememberLazyListState()
+    val rowsLimit = 100 
+    val lines = remember(output) { output.split("\n").takeLast(rowsLimit) }
     
-    LaunchedEffect(output.length) {
-        if (output.isNotEmpty()) {
-            listState.animateScrollToItem(Int.MAX_VALUE)
+    LaunchedEffect(lines.size) {
+        if (lines.isNotEmpty()) {
+            listState.scrollToItem(lines.size - 1)
         }
     }
 
     LazyColumn(
         modifier = modifier.fillMaxSize().onSizeChanged { size ->
-            // Approximate char width for monospace
             val charWidth = (themeManager.fontSize * density * 0.6f).toInt()
             val lineHeight = (themeManager.fontSize * density * 1.2f).toInt()
             if (charWidth > 0 && lineHeight > 0) {
@@ -48,8 +50,6 @@ fun TerminalCanvas(
         },
         state = listState
     ) {
-        val rows = 50 // Limit lines for performance
-        val lines = output.split("\n").takeLast(rows)
         items(lines) { line ->
             Text(
                 text = parseANSIString(line, theme.foreground, theme.background),
