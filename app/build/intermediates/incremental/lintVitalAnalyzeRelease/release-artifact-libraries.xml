@@ -333,6 +333,19 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
+      name="androidx.lifecycle:lifecycle-runtime-compose:2.7.0@aar"
+      jars="/home/warden/.gradle/caches/transforms-3/e6e1047433c7a5919aeb26a6819ce5d9/transformed/jetified-lifecycle-runtime-compose-2.7.0/jars/classes.jar"
+      resolved="androidx.lifecycle:lifecycle-runtime-compose:2.7.0"
+      folder="/home/warden/.gradle/caches/transforms-3/e6e1047433c7a5919aeb26a6819ce5d9/transformed/jetified-lifecycle-runtime-compose-2.7.0"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
       name="androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0@aar"
       jars="/home/warden/.gradle/caches/transforms-3/f6847bcd4c74bc718992eea57258963f/transformed/jetified-lifecycle-viewmodel-savedstate-2.7.0/jars/classes.jar"
       resolved="androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0"
@@ -380,6 +393,19 @@
       jars="/home/warden/.gradle/caches/transforms-3/751c05dd6209cea3451016bb4dea031a/transformed/jetified-room-ktx-2.6.1/jars/classes.jar"
       resolved="androidx.room:room-ktx:2.6.1"
       folder="/home/warden/.gradle/caches/transforms-3/751c05dd6209cea3451016bb4dea031a/transformed/jetified-room-ktx-2.6.1"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name="androidx.annotation:annotation-experimental:1.3.1@aar"
+      jars="/home/warden/.gradle/caches/transforms-3/3f676211d83fb3abee23949ba8f7bda6/transformed/jetified-annotation-experimental-1.3.1/jars/classes.jar"
+      resolved="androidx.annotation:annotation-experimental:1.3.1"
+      folder="/home/warden/.gradle/caches/transforms-3/3f676211d83fb3abee23949ba8f7bda6/transformed/jetified-annotation-experimental-1.3.1"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"
@@ -616,19 +642,6 @@
       name="org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.10@jar"
       jars="/home/warden/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.9.10/c7510d64a83411a649c76f2778304ddf71d7437b/kotlin-stdlib-jdk8-1.9.10.jar"
       resolved="org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.10"/>
-  <library
-      name="androidx.annotation:annotation-experimental:1.3.1@aar"
-      jars="/home/warden/.gradle/caches/transforms-3/3f676211d83fb3abee23949ba8f7bda6/transformed/jetified-annotation-experimental-1.3.1/jars/classes.jar"
-      resolved="androidx.annotation:annotation-experimental:1.3.1"
-      folder="/home/warden/.gradle/caches/transforms-3/3f676211d83fb3abee23949ba8f7bda6/transformed/jetified-annotation-experimental-1.3.1"
-      manifest="AndroidManifest.xml"
-      resFolder="res"
-      assetsFolder="assets"
-      lintJar="lint.jar"
-      publicResources="public.txt"
-      symbolFile="R.txt"
-      externalAnnotations="annotations.zip"
-      proguardRules="proguard.txt"/>
   <library
       name="androidx.savedstate:savedstate-ktx:1.2.1@aar"
       jars="/home/warden/.gradle/caches/transforms-3/8061039266a6ab4d143436b81421e7b8/transformed/jetified-savedstate-ktx-1.2.1/jars/classes.jar"

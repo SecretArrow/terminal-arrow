@@ -19,23 +19,27 @@ class BackupManager @Inject constructor(
     private val terminalDao: TerminalDao
 ) {
     suspend fun exportProfiles(): String = withContext(Dispatchers.IO) {
-        val profiles = terminalDao.getAllProfiles().first()
-        val jsonArray = JSONArray()
-        
-        profiles.forEach { profile ->
-            val jsonObject = JSONObject().apply {
-                put("name", profile.name)
-                put("host", profile.host)
-                put("port", profile.port)
-                put("username", profile.username)
-                put("password", profile.password)
+        try {
+            val profiles = terminalDao.getAllProfiles().first()
+            val jsonArray = JSONArray()
+            
+            profiles.forEach { profile ->
+                val jsonObject = JSONObject().apply {
+                    put("name", profile.name)
+                    put("host", profile.host)
+                    put("port", profile.port)
+                    put("username", profile.username)
+                    put("password", profile.password)
+                }
+                jsonArray.put(jsonObject)
             }
-            jsonArray.put(jsonObject)
+            
+            val backupFile = File(context.cacheDir, "terminal_arrow_backup.json")
+            backupFile.writeText(jsonArray.toString(4))
+            backupFile.absolutePath
+        } catch (e: Exception) {
+            ""
         }
-        
-        val backupFile = File(context.cacheDir, "terminal_arrow_backup.json")
-        backupFile.writeText(jsonArray.toString(4))
-        backupFile.absolutePath
     }
 
     suspend fun importProfiles(jsonString: String): Boolean = withContext(Dispatchers.IO) {

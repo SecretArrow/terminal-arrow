@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.terminalarrow.app-mergeReleaseResources-57:/values-it/values-it.xml",
+            "outputFile": "com.terminalarrow.app-mergeReleaseResources-58:/values-it/values-it.xml",
             "map": [
                 {
                     "source": "/home/warden/.gradle/caches/transforms-3/83cb5aa7df148986b417f1ecce9944f5/transformed/biometric-1.1.0/res/values-it/values-it.xml",

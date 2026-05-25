@@ -17,6 +17,12 @@ import com.terminalarrow.app.ui.cloud.*
 import com.terminalarrow.app.ui.snippets.*
 import com.terminalarrow.app.ui.theme.*
 import com.terminalarrow.app.utils.BiometricHelper
+import com.terminalarrow.app.utils.VibratorHelper
+import com.terminalarrow.app.core.ui.theme.TerminalArrowTheme
+import com.terminalarrow.app.feature.terminal.TerminalUiEvent
+import com.terminalarrow.app.feature.sftp.SftpUiEvent
+import com.terminalarrow.app.feature.editor.EditorUiEvent
+import com.terminalarrow.app.feature.snippets.SnippetsUiEvent
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.fragment.app.FragmentActivity
 import androidx.compose.ui.platform.LocalContext
@@ -26,6 +32,7 @@ import javax.inject.Inject
 class MainActivity : FragmentActivity() {
     @Inject lateinit var biometricHelper: BiometricHelper
     @Inject lateinit var themeManager: ThemeManager
+    @Inject lateinit var vibratorHelper: VibratorHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,12 +49,12 @@ class MainActivity : FragmentActivity() {
 
     private fun setupContent() {
         setContent {
-            MaterialTheme {
+            TerminalArrowTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    TerminalArrowNavigation(themeManager)
+                    TerminalArrowNavigation(themeManager, vibratorHelper)
                 }
             }
         }
@@ -55,7 +62,7 @@ class MainActivity : FragmentActivity() {
 }
 
 @Composable
-fun TerminalArrowNavigation(themeManager: ThemeManager) {
+fun TerminalArrowNavigation(themeManager: ThemeManager, vibratorHelper: VibratorHelper) {
     val navController = rememberNavController()
     val terminalViewModel: TerminalViewModel = hiltViewModel()
     val profileViewModel: ProfileViewModel = hiltViewModel()
@@ -70,11 +77,11 @@ fun TerminalArrowNavigation(themeManager: ThemeManager) {
             ProfileListScreen(
                 viewModel = profileViewModel,
                 onProfileClick = { profile ->
-                    terminalViewModel.connect(profile)
+                    terminalViewModel.onEvent(TerminalUiEvent.Connect(profile))
                     navController.navigate("terminal")
                 },
                 onSFTPClick = { profile ->
-                    sftpViewModel.connectAndList(profile.host, profile.port, profile.username, profile.password, profile.keyPath)
+                    sftpViewModel.onEvent(SftpUiEvent.Connect(profile.host, profile.port, profile.username, profile.password, profile.keyPath))
                     navController.navigate("sftp")
                 },
                 onAddProfile = { navController.navigate("config") },
@@ -88,7 +95,7 @@ fun TerminalArrowNavigation(themeManager: ThemeManager) {
         composable("config") {
             HostConfigScreen(
                 onConnect = { profile ->
-                    terminalViewModel.connect(profile)
+                    terminalViewModel.onEvent(TerminalUiEvent.Connect(profile))
                     navController.navigate("terminal")
                 },
                 onSave = { name, host, port, user, pass, keyPath, group, rules ->
@@ -98,11 +105,11 @@ fun TerminalArrowNavigation(themeManager: ThemeManager) {
             )
         }
         composable("terminal") {
-            TerminalScreen(terminalViewModel, snippetViewModel, themeManager)
+            TerminalScreen(terminalViewModel, snippetViewModel, themeManager, vibratorHelper)
         }
         composable("sftp") {
             SFTPBrowserScreen(sftpViewModel) { path ->
-                editorViewModel.loadFile(context, path)
+                editorViewModel.onEvent(EditorUiEvent.LoadFile(context, path))
                 navController.navigate("editor")
             }
         }
@@ -113,7 +120,7 @@ fun TerminalArrowNavigation(themeManager: ThemeManager) {
         }
         composable("snippets") {
             SnippetScreen(snippetViewModel) { command ->
-                terminalViewModel.sendCommand(command)
+                terminalViewModel.onEvent(TerminalUiEvent.SendCommand(command))
                 navController.navigate("terminal")
             }
         }

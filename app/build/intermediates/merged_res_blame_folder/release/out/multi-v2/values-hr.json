@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.terminalarrow.app-mergeReleaseResources-57:/values-hr/values-hr.xml",
+            "outputFile": "com.terminalarrow.app-mergeReleaseResources-58:/values-hr/values-hr.xml",
             "map": [
                 {
                     "source": "/home/warden/.gradle/caches/transforms-3/89af603c5ca7611208e7eb29e791404e/transformed/jetified-ui-release/res/values-hr/values-hr.xml",

@@ -30,15 +30,17 @@ class SSHForegroundService : Service() {
         }
 
         // Wake Lock to keep CPU alive indefinitely while service is running
-        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TerminalArrow::SSH")
+        val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager
+        wakeLock = powerManager?.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TerminalArrow::SSH")
         wakeLock?.acquire()
 
         return START_STICKY
     }
 
     override fun onDestroy() {
-        wakeLock?.release()
+        if (wakeLock?.isHeld == true) {
+            wakeLock?.release()
+        }
         super.onDestroy()
     }
 
@@ -46,13 +48,21 @@ class SSHForegroundService : Service() {
 
     companion object {
         fun start(context: Context) {
-            val intent = Intent(context, SSHForegroundService::class.java)
-            context.startForegroundService(intent)
+            try {
+                val intent = Intent(context, SSHForegroundService::class.java)
+                context.startForegroundService(intent)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
 
         fun stop(context: Context) {
-            val intent = Intent(context, SSHForegroundService::class.java)
-            context.stopService(intent)
+            try {
+                val intent = Intent(context, SSHForegroundService::class.java)
+                context.stopService(intent)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 }

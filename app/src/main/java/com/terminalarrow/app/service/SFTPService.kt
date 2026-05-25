@@ -40,55 +40,94 @@ class SFTPService @Inject constructor(@dagger.hilt.android.qualifiers.Applicatio
     }
 
     suspend fun listFiles(path: String): List<RemoteResourceInfo> = withContext(Dispatchers.IO) {
-        sftpClient?.ls(path) ?: emptyList()
+        try {
+            sftpClient?.ls(path) ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     private fun setTransferListener(onProgress: (Int) -> Unit) {
-        sftpClient?.fileTransfer?.transferListener = object : TransferListener {
-            override fun directory(name: String): TransferListener = this
-            override fun file(name: String, size: Long): StreamCopier.Listener {
-                return object : StreamCopier.Listener {
-                    override fun reportProgress(transferred: Long) {
-                        if (size > 0) {
-                            val percent = ((transferred.toDouble() / size) * 100).toInt()
-                            onProgress(percent)
+        try {
+            sftpClient?.fileTransfer?.transferListener = object : TransferListener {
+                override fun directory(name: String): TransferListener = this
+                override fun file(name: String, size: Long): StreamCopier.Listener {
+                    return object : StreamCopier.Listener {
+                        override fun reportProgress(transferred: Long) {
+                            if (size > 0) {
+                                val percent = ((transferred.toDouble() / size) * 100).toInt()
+                                onProgress(percent)
+                            }
                         }
                     }
                 }
             }
+        } catch (e: Exception) {
+            // Log or handle error
         }
     }
 
     suspend fun downloadFile(remotePath: String, localPath: String, onProgress: (Int) -> Unit = {}) = withContext(Dispatchers.IO) {
-        setTransferListener(onProgress)
-        sftpClient?.get(remotePath, localPath)
-        sftpClient?.fileTransfer?.transferListener = null
+        try {
+            setTransferListener(onProgress)
+            sftpClient?.get(remotePath, localPath)
+        } catch (e: Exception) {
+            // Handle error
+        } finally {
+            try {
+                sftpClient?.fileTransfer?.transferListener = null
+            } catch (e: Exception) {}
+        }
     }
 
     suspend fun uploadFile(localPath: String, remotePath: String, onProgress: (Int) -> Unit = {}) = withContext(Dispatchers.IO) {
-        setTransferListener(onProgress)
-        sftpClient?.put(localPath, remotePath)
-        sftpClient?.fileTransfer?.transferListener = null
+        try {
+            setTransferListener(onProgress)
+            sftpClient?.put(localPath, remotePath)
+        } catch (e: Exception) {
+            // Handle error
+        } finally {
+            try {
+                sftpClient?.fileTransfer?.transferListener = null
+            } catch (e: Exception) {}
+        }
     }
 
     suspend fun deleteFile(path: String) = withContext(Dispatchers.IO) {
-        sftpClient?.rm(path)
+        try {
+            sftpClient?.rm(path)
+        } catch (e: Exception) {
+            // Handle error
+        }
     }
 
     suspend fun renameFile(oldPath: String, newPath: String) = withContext(Dispatchers.IO) {
-        sftpClient?.rename(oldPath, newPath)
+        try {
+            sftpClient?.rename(oldPath, newPath)
+        } catch (e: Exception) {
+            // Handle error
+        }
     }
 
     suspend fun getRemoteInputStream(path: String): java.io.InputStream? = withContext(Dispatchers.IO) {
-        sftpClient?.open(path)?.let { remoteFile ->
-            remoteFile.RemoteFileInputStream()
+        try {
+            sftpClient?.open(path)?.let { remoteFile ->
+                remoteFile.RemoteFileInputStream()
+            }
+        } catch (e: Exception) {
+            null
         }
     }
 
     fun disconnect() {
-        sftpClient?.close()
-        client?.disconnect()
-        sftpClient = null
-        client = null
+        try {
+            sftpClient?.close()
+            client?.disconnect()
+        } catch (e: Exception) {
+            // Ignore on disconnect
+        } finally {
+            sftpClient = null
+            client = null
+        }
     }
 }

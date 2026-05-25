@@ -408,6 +408,7 @@ public final class DaggerTerminalArrowApp_HiltComponents_SingletonC {
     private MainActivity injectMainActivity2(MainActivity instance) {
       MainActivity_MembersInjector.injectBiometricHelper(instance, singletonCImpl.biometricHelperProvider.get());
       MainActivity_MembersInjector.injectThemeManager(instance, singletonCImpl.themeManagerProvider.get());
+      MainActivity_MembersInjector.injectVibratorHelper(instance, singletonCImpl.vibratorHelperProvider.get());
       return instance;
     }
   }
@@ -585,6 +586,8 @@ public final class DaggerTerminalArrowApp_HiltComponents_SingletonC {
 
     private Provider<ThemeManager> themeManagerProvider;
 
+    private Provider<VibratorHelper> vibratorHelperProvider;
+
     private Provider<AppDatabase> provideDatabaseProvider;
 
     private Provider<SFTPService> sFTPServiceProvider;
@@ -592,8 +595,6 @@ public final class DaggerTerminalArrowApp_HiltComponents_SingletonC {
     private Provider<BackupManager> backupManagerProvider;
 
     private Provider<SSHService> sSHServiceProvider;
-
-    private Provider<VibratorHelper> vibratorHelperProvider;
 
     private Provider<NativeBufferProcessor> nativeBufferProcessorProvider;
 
@@ -611,11 +612,11 @@ public final class DaggerTerminalArrowApp_HiltComponents_SingletonC {
     private void initialize(final ApplicationContextModule applicationContextModuleParam) {
       this.biometricHelperProvider = DoubleCheck.provider(new SwitchingProvider<BiometricHelper>(singletonCImpl, 0));
       this.themeManagerProvider = DoubleCheck.provider(new SwitchingProvider<ThemeManager>(singletonCImpl, 1));
-      this.provideDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<AppDatabase>(singletonCImpl, 2));
-      this.sFTPServiceProvider = DoubleCheck.provider(new SwitchingProvider<SFTPService>(singletonCImpl, 3));
-      this.backupManagerProvider = DoubleCheck.provider(new SwitchingProvider<BackupManager>(singletonCImpl, 4));
-      this.sSHServiceProvider = DoubleCheck.provider(new SwitchingProvider<SSHService>(singletonCImpl, 5));
-      this.vibratorHelperProvider = DoubleCheck.provider(new SwitchingProvider<VibratorHelper>(singletonCImpl, 6));
+      this.vibratorHelperProvider = DoubleCheck.provider(new SwitchingProvider<VibratorHelper>(singletonCImpl, 2));
+      this.provideDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<AppDatabase>(singletonCImpl, 3));
+      this.sFTPServiceProvider = DoubleCheck.provider(new SwitchingProvider<SFTPService>(singletonCImpl, 4));
+      this.backupManagerProvider = DoubleCheck.provider(new SwitchingProvider<BackupManager>(singletonCImpl, 5));
+      this.sSHServiceProvider = DoubleCheck.provider(new SwitchingProvider<SSHService>(singletonCImpl, 6));
       this.nativeBufferProcessorProvider = DoubleCheck.provider(new SwitchingProvider<NativeBufferProcessor>(singletonCImpl, 7));
     }
 
@@ -658,20 +659,20 @@ public final class DaggerTerminalArrowApp_HiltComponents_SingletonC {
           case 1: // com.terminalarrow.app.ui.theme.ThemeManager 
           return (T) new ThemeManager();
 
-          case 2: // com.terminalarrow.app.data.AppDatabase 
+          case 2: // com.terminalarrow.app.utils.VibratorHelper 
+          return (T) new VibratorHelper(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 3: // com.terminalarrow.app.data.AppDatabase 
           return (T) DatabaseModule_ProvideDatabaseFactory.provideDatabase(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 3: // com.terminalarrow.app.service.SFTPService 
+          case 4: // com.terminalarrow.app.service.SFTPService 
           return (T) new SFTPService(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 4: // com.terminalarrow.app.utils.BackupManager 
+          case 5: // com.terminalarrow.app.utils.BackupManager 
           return (T) new BackupManager(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.terminalDao());
 
-          case 5: // com.terminalarrow.app.service.SSHService 
+          case 6: // com.terminalarrow.app.service.SSHService 
           return (T) new SSHService(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
-
-          case 6: // com.terminalarrow.app.utils.VibratorHelper 
-          return (T) new VibratorHelper(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           case 7: // com.terminalarrow.app.utils.NativeBufferProcessor 
           return (T) new NativeBufferProcessor();

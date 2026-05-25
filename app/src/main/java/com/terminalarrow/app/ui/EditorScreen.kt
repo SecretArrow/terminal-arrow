@@ -1,52 +1,64 @@
 package com.terminalarrow.app.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.terminalarrow.app.feature.editor.*
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditorScreen(viewModel: EditorViewModel, onBack: () -> Unit) {
-    val content by viewModel.content.collectAsState()
-    val isSaving by viewModel.isSaving.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiEffect = viewModel.uiEffect
+    val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
+    LaunchedEffect(uiEffect) {
+        uiEffect.collectLatest { effect ->
+            when (effect) {
+                is EditorUiEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
+            }
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Code Editor") },
                 actions = {
-                    if (isSaving) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                    } else {
-                        IconButton(onClick = { viewModel.saveFile(context, onBack) }) {
-                            Icon(Icons.Default.Save, contentDescription = "Save")
-                        }
+                    IconButton(onClick = { viewModel.onEvent(EditorUiEvent.SaveFile(context, onBack)) }) {
+                        Icon(Icons.Default.Save, contentDescription = "Save")
                     }
                 }
             )
         }
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).padding(16.dp)) {
-            BasicTextField(
-                value = content,
-                onValueChange = { viewModel.setContent(it) },
-                modifier = Modifier.fillMaxSize(),
-                textStyle = TextStyle(
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            )
+        Box(modifier = Modifier.padding(padding).fillMaxSize()) {
+            when (val state = uiState) {
+                is EditorUiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                is EditorUiState.Error -> Text("Error: ${state.message}", color = MaterialTheme.colorScheme.error, modifier = Modifier.align(Alignment.Center))
+                is EditorUiState.Success -> {
+                    TextField(
+                        value = state.content,
+                        onValueChange = { viewModel.onEvent(EditorUiEvent.SetContent(it)) },
+                        modifier = Modifier.fillMaxSize(),
+                        enabled = !state.isSaving
+                    )
+                    
+                    if (state.isSaving) {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter))
+                    }
+                }
+            }
         }
     }
 }

@@ -54,11 +54,17 @@ class SSHService @Inject constructor(@dagger.hilt.android.qualifiers.Application
             sessions[sessionId] = SessionContainer(client, shell, outputStream, sessionScope)
 
             sessionScope.launch {
-                val inputStream = shell.inputStream
-                val buffer = ByteArray(2048)
-                var read: Int = 0
-                while (isActive && inputStream.read(buffer).also { read = it } != -1) {
-                    onOutput(String(buffer, 0, read))
+                try {
+                    val inputStream = shell.inputStream
+                    val buffer = ByteArray(2048)
+                    var read: Int = 0
+                    while (isActive && inputStream.read(buffer).also { read = it } != -1) {
+                        onOutput(String(buffer, 0, read))
+                    }
+                } catch (e: Exception) {
+                    onOutput("\nConnection lost: ${e.message}\n")
+                } finally {
+                    disconnect(sessionId)
                 }
             }
         } catch (e: Exception) {

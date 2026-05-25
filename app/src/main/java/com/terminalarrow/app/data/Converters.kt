@@ -6,9 +6,14 @@ import com.google.gson.reflect.TypeToken
 
 class Converters {
     @TypeConverter
-    fun fromString(value: String): List<ForwardingRule> {
-        val listType = object : TypeToken<List<ForwardingRule>>() {}.type
-        return Gson().fromJson(value, listType)
+    fun fromString(value: String?): List<ForwardingRule> {
+        if (value == null) return emptyList()
+        return try {
+            val listType = object : TypeToken<List<ForwardingRule>>() {}.type
+            Gson().fromJson(value, listType) ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     @TypeConverter

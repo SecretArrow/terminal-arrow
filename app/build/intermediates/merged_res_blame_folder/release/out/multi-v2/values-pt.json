@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.terminalarrow.app-mergeReleaseResources-57:/values-pt/values-pt.xml",
+            "outputFile": "com.terminalarrow.app-mergeReleaseResources-58:/values-pt/values-pt.xml",
             "map": [
                 {
                     "source": "/home/warden/.gradle/caches/transforms-3/bcbffa7df811543b480fe09aa12a54e2/transformed/jetified-material3-1.1.2/res/values-pt/values-pt.xml",

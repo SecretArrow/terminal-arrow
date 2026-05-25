@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.terminalarrow.app-mergeReleaseResources-57:/values/values.xml",
+            "outputFile": "com.terminalarrow.app-mergeReleaseResources-58:/values/values.xml",
             "map": [
                 {
                     "source": "/home/warden/.gradle/caches/transforms-3/178e4d81b3980cb7c7bb97b557003ff7/transformed/core-1.12.0/res/values/values.xml",
