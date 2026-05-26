@@ -2,6 +2,7 @@ package com.terminalarrow.app.utils
 
 import android.content.Context
 import com.terminalarrow.app.data.ConnectionProfile
+import com.terminalarrow.app.data.ForwardingRule
 import com.terminalarrow.app.data.TerminalDao
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -18,24 +19,16 @@ class BackupManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val terminalDao: TerminalDao
 ) {
+
     suspend fun exportProfiles(): String = withContext(Dispatchers.IO) {
         try {
             val profiles = terminalDao.getAllProfiles().first()
             val jsonArray = JSONArray()
-            
             profiles.forEach { profile ->
-                val jsonObject = JSONObject().apply {
-                    put("name", profile.name)
-                    put("host", profile.host)
-                    put("port", profile.port)
-                    put("username", profile.username)
-                    put("password", profile.password)
-                }
-                jsonArray.put(jsonObject)
+                jsonArray.put(profile.toJson())
             }
-            
             val backupFile = File(context.cacheDir, "terminal_arrow_backup.json")
-            backupFile.writeText(jsonArray.toString(4))
+            backupFile.writeText(jsonArray.toString(2))
             backupFile.absolutePath
         } catch (e: Exception) {
             ""
@@ -47,18 +40,62 @@ class BackupManager @Inject constructor(
             val jsonArray = JSONArray(jsonString)
             for (i in 0 until jsonArray.length()) {
                 val obj = jsonArray.getJSONObject(i)
-                val profile = ConnectionProfile(
-                    name = obj.getString("name"),
-                    host = obj.getString("host"),
-                    port = obj.getInt("port"),
-                    username = obj.getString("username"),
-                    password = obj.optString("password", null)
-                )
-                terminalDao.insertProfile(profile)
+                terminalDao.insertProfile(obj.toConnectionProfile())
             }
             true
         } catch (e: Exception) {
             false
         }
     }
+
+    private fun ConnectionProfile.toJson(): JSONObject = JSONObject().apply {
+        put("name", name)
+        put("host", host)
+        put("port", port)
+        put("username", username)
+        if (password != null) put("password", password) else put("password", JSONObject.NULL)
+        if (keyPath != null) put("keyPath", keyPath) else put("keyPath", JSONObject.NULL)
+        put("group", group ?: "Default")
+        val rules = JSONArray()
+        forwardingRules.forEach { rule ->
+            rules.put(JSONObject().apply {
+                put("type", rule.type)
+                put("localPort", rule.localPort)
+                if (rule.remoteHost != null) put("remoteHost", rule.remoteHost) else put("remoteHost", JSONObject.NULL)
+                if (rule.remotePort != null) put("remotePort", rule.remotePort) else put("remotePort", JSONObject.NULL)
+            })
+        }
+        put("forwardingRules", rules)
+    }
+
+    private fun JSONObject.toConnectionProfile(): ConnectionProfile {
+        val rules = mutableListOf<ForwardingRule>()
+        val rulesJson = optJSONArray("forwardingRules")
+        if (rulesJson != null) {
+            for (i in 0 until rulesJson.length()) {
+                val r = rulesJson.optJSONObject(i) ?: continue
+                rules.add(
+                    ForwardingRule(
+                        type = r.optString("type", "LOCAL"),
+                        localPort = r.optInt("localPort", 0),
+                        remoteHost = r.optStringOrNull("remoteHost"),
+                        remotePort = if (r.isNull("remotePort")) null else r.optInt("remotePort")
+                    )
+                )
+            }
+        }
+        return ConnectionProfile(
+            name = optString("name", "Unnamed"),
+            host = optString("host", ""),
+            port = optInt("port", 22),
+            username = optString("username", ""),
+            password = optStringOrNull("password"),
+            keyPath = optStringOrNull("keyPath"),
+            group = optString("group", "Default"),
+            forwardingRules = rules
+        )
+    }
+
+    private fun JSONObject.optStringOrNull(key: String): String? =
+        if (!has(key) || isNull(key)) null else optString(key)
 }

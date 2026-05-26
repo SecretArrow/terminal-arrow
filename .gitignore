@@ -1,16 +1,27 @@
+# Gradle
+.gradle/
+**/.gradle/
+**/build/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# IntelliJ / Android Studio
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizard.settings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+.idea/
 local.properties
-app/build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Keystore properties (the .keystore file itself is committed for CI signing)
+keystore.properties
+
+# Backups
+*.bak
+*.orig

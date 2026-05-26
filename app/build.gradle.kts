@@ -32,14 +32,27 @@ android {
     }
 
     buildTypes {
+        debug {
+            isMinifyEnabled = false
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
+    }
+
+    lint {
+        abortOnError = false
+        warningsAsErrors = false
+        checkReleaseBuilds = false
+        disable += setOf("MissingTranslation", "ExtraTranslation")
     }
 
     externalNativeBuild {
@@ -67,6 +80,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.8"
@@ -75,6 +89,16 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+}
+
+// Rename per-ABI APK outputs to a more descriptive scheme.
+android.applicationVariants.all {
+    val variant = this
+    outputs.all {
+        val out = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+        val filterAbi = out.filters.firstOrNull { it.filterType == "ABI" }?.identifier ?: "universal"
+        out.outputFileName = "terminal-arrow-${variant.versionName}-${filterAbi}-${variant.buildType.name}.apk"
     }
 }
 

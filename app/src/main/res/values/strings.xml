@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Terminal Arrow</string>
+    <string name="notification_channel_ssh">SSH Sessions</string>
+    <string name="notification_title">Terminal Arrow Active</string>
+    <string name="notification_text">SSH connection is running in the background</string>
+    <string name="biometric_title">Unlock Terminal Arrow</string>
+    <string name="biometric_subtitle">Use your biometric credential to continue</string>
+    <string name="biometric_cancel">Cancel</string>
+</resources>

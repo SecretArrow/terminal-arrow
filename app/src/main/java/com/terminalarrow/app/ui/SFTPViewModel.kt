@@ -175,9 +175,11 @@ class SFTPViewModel @Inject constructor(
         }
     }
 
-    private fun renameFile(oldPath: String, newPath: String) {
+    private fun renameFile(oldPath: String, newName: String) {
         viewModelScope.launch {
             try {
+                val parent = oldPath.substringBeforeLast("/", "")
+                val newPath = if (parent.isEmpty()) "/$newName" else "$parent/$newName"
                 sftpService.renameFile(oldPath, newPath)
                 _uiEffect.send(SftpUiEffect.ShowSnackbar("File renamed"))
                 refresh()

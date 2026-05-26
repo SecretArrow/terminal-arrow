@@ -7,7 +7,11 @@ import com.terminalarrow.app.utils.BackupManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.*
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -44,9 +48,12 @@ class ProfileViewModelTest {
     }
 
     @Test
-    fun `initial state should be Success empty when no profiles`() = runTest {
-        assertTrue(viewModel.uiState.value is ProfilesUiState.Success)
-        val state = viewModel.uiState.value as ProfilesUiState.Success
-        assertTrue(state.profiles.isEmpty())
+    fun `state becomes Success empty after loadProfiles completes`() = runTest {
+        // The init block schedules the load on the main dispatcher; advance it.
+        advanceUntilIdle()
+        val current = viewModel.uiState.value
+        assertTrue("Expected Success but was $current", current is ProfilesUiState.Success)
+        val success = current as ProfilesUiState.Success
+        assertTrue(success.profiles.isEmpty())
     }
 }

@@ -137,9 +137,12 @@ fun TerminalScreen(
                 }
             }
 
-            KeyboardToolbar(onKeyClick = { 
+            KeyboardToolbar(onKeyClick = { key ->
                 val activeId = (uiState as? TerminalUiState.Success)?.activeSession ?: "primary"
-                viewModel.onEvent(TerminalUiEvent.SpecialKey(activeId, it)) 
+                val seq = specialKeyToSequence(key)
+                if (seq.isNotEmpty()) {
+                    viewModel.onEvent(TerminalUiEvent.SendCommand(seq, activeId))
+                }
             })
 
             if (uiState is TerminalUiState.Success) {
@@ -296,6 +299,22 @@ private fun directionToEscape(dir: String): String = when (dir) {
     "DOWN" -> "\u001B[B"
     "RIGHT" -> "\u001B[C"
     "LEFT" -> "\u001B[D"
+    else -> ""
+}
+
+private fun specialKeyToSequence(key: String): String = when (key) {
+    "ESC" -> "\u001B"
+    "TAB" -> "\t"
+    "↑" -> "\u001B[A"
+    "↓" -> "\u001B[B"
+    "←" -> "\u001B[D"
+    "→" -> "\u001B[C"
+    "PAGE UP" -> "\u001B[5~"
+    "PAGE DOWN" -> "\u001B[6~"
+    "HOME" -> "\u001B[H"
+    "END" -> "\u001B[F"
+    "DEL" -> "\u001B[3~"
+    // CTRL / ALT are modifiers and handled together with a follow-up keystroke
     else -> ""
 }
 

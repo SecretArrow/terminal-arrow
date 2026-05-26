@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Don't include credentials in cloud backups for safety. -->
+<full-backup-content>
+    <exclude domain="database" path="terminal_arrow_db" />
+    <exclude domain="file" path="keys/" />
+    <exclude domain="sharedpref" path="terminal_arrow_prefs.xml" />
+</full-backup-content>
