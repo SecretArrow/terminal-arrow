@@ -16,6 +16,8 @@ import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 
+private const val MAX_BUFFER_LINES = 5000
+
 @HiltViewModel
 class TerminalViewModel @Inject constructor(
     private val sshService: SSHService,
@@ -180,10 +182,4 @@ private fun trimToLineLimit(buffer: String, maxLines: Int): String {
         i++
     }
     return buffer.substring(i)
-}
-
-object TerminalViewModel {
-    // Roughly 5000 lines of scrollback — enough for build logs while still
-    // keeping recomposition cheap.
-    private const val MAX_BUFFER_LINES = 5000
 }

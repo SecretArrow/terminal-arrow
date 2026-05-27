@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder
+import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder.Parameters
 import net.schmizz.sshj.connection.channel.direct.Session
 import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder
 import net.schmizz.sshj.connection.channel.forwarded.SocketForwardingConnectListener
@@ -143,7 +144,7 @@ class SSHService @Inject constructor(
             "LOCAL" -> {
                 val remoteHost = rule.remoteHost ?: "localhost"
                 val remotePort = rule.remotePort ?: rule.localPort
-                val params = LocalPortForwarder.Parameters(
+                val params = Parameters(
                     /* localAddress = */ "127.0.0.1",
                     /* localPort = */ rule.localPort,
                     /* remoteHost = */ remoteHost,
