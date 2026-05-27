@@ -8,12 +8,19 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write   # needed so the version-bump job can push back to main
+
+concurrency:
+  group: android-ci-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
     name: Lint + Unit Tests + Debug Build
     runs-on: ubuntu-latest
+    outputs:
+      version_code: ${{ steps.version.outputs.code }}
+      version_name: ${{ steps.version.outputs.name }}
     steps:
       - uses: actions/checkout@v4
 
@@ -37,6 +44,15 @@ jobs:
 
       - name: Make gradlew executable
         run: chmod +x gradlew
+
+      - name: Read version
+        id: version
+        run: |
+          CODE=$(grep -E '^\s*versionCode\s*=' app/build.gradle.kts | head -1 | grep -oE '[0-9]+')
+          NAME=$(grep -E '^\s*versionName\s*=' app/build.gradle.kts | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "::notice::Building versionCode=$CODE versionName=$NAME"
 
       - name: Lint (debug)
         run: ./gradlew lintDebug --no-daemon --stacktrace
@@ -69,3 +85,58 @@ jobs:
           name: terminal-arrow-debug-apks
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+
+  bump-version:
+    name: Auto-bump version on main
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Bump versionCode and patch component of versionName
+        id: bump
+        run: |
+          # Avoid loops: skip if the head commit was itself a version-bump commit.
+          if git log -1 --pretty=%s | grep -q "^chore: bump version "; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Latest commit is a version bump, skipping to avoid loops."
+            exit 0
+          fi
+
+          GRADLE=app/build.gradle.kts
+          CUR_CODE=$(grep -E '^\s*versionCode\s*=' "$GRADLE" | head -1 | grep -oE '[0-9]+')
+          CUR_NAME=$(grep -E '^\s*versionName\s*=' "$GRADLE" | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+          NEW_CODE=$((CUR_CODE + 1))
+
+          # Bump patch (third component). If there's no patch, append .1.
+          if [[ "$CUR_NAME" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            NEW_NAME="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((BASH_REMATCH[3] + 1))"
+          elif [[ "$CUR_NAME" =~ ^([0-9]+)\.([0-9]+)$ ]]; then
+            NEW_NAME="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.1"
+          else
+            NEW_NAME="${CUR_NAME}.1"
+          fi
+
+          sed -i "s/versionCode = $CUR_CODE/versionCode = $NEW_CODE/" "$GRADLE"
+          sed -i "s/versionName = \"$CUR_NAME\"/versionName = \"$NEW_NAME\"/" "$GRADLE"
+
+          echo "old_code=$CUR_CODE" >> "$GITHUB_OUTPUT"
+          echo "new_code=$NEW_CODE" >> "$GITHUB_OUTPUT"
+          echo "old_name=$CUR_NAME" >> "$GITHUB_OUTPUT"
+          echo "new_name=$NEW_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Commit + push bump
+        if: steps.bump.outputs.skip != 'true'
+        env:
+          NEW_NAME: ${{ steps.bump.outputs.new_name }}
+          NEW_CODE: ${{ steps.bump.outputs.new_code }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add app/build.gradle.kts
+          git commit -m "chore: bump version to $NEW_NAME ($NEW_CODE)"
+          git push origin HEAD:main

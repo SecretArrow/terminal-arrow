@@ -1,6 +1,7 @@
 package com.terminalarrow.app
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -10,15 +11,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.terminalarrow.app.core.ui.theme.TerminalArrowTheme
 import com.terminalarrow.app.data.ConnectionProfile
 import com.terminalarrow.app.feature.editor.EditorUiEvent
@@ -32,6 +40,7 @@ import com.terminalarrow.app.ui.ProfileListScreen
 import com.terminalarrow.app.ui.ProfileViewModel
 import com.terminalarrow.app.ui.SFTPBrowserScreen
 import com.terminalarrow.app.ui.SFTPViewModel
+import com.terminalarrow.app.ui.SettingsScreen
 import com.terminalarrow.app.ui.TerminalScreen
 import com.terminalarrow.app.ui.TerminalViewModel
 import com.terminalarrow.app.ui.cloud.CloudImportScreen
@@ -57,9 +66,14 @@ class MainActivity : FragmentActivity() {
         ActivityResultContracts.RequestPermission()
     ) { /* result handled silently */ }
 
+    // Honored once at startup; routes intent action through to navigation.
+    private var pendingShortcutAction: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        pendingShortcutAction = intent?.action
 
         maybeRequestNotificationPermission()
 
@@ -67,11 +81,18 @@ class MainActivity : FragmentActivity() {
             biometricHelper.showBiometricPrompt(
                 activity = this,
                 onSuccess = { setupContent() },
-                onError = { /* fall back to no-auth UI rather than killing the app */ setupContent() }
+                onError = { setupContent() }
             )
         } else {
             setupContent()
         }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        // App shortcuts re-launching the activity should also navigate.
+        pendingShortcutAction = intent?.action
+        setupContent()
     }
 
     private fun maybeRequestNotificationPermission() {
@@ -87,13 +108,15 @@ class MainActivity : FragmentActivity() {
     }
 
     private fun setupContent() {
+        val action = pendingShortcutAction
+        pendingShortcutAction = null
         setContent {
             TerminalArrowTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    TerminalArrowNavigation(themeManager, vibratorHelper)
+                    TerminalArrowNavigation(themeManager, vibratorHelper, action)
                 }
             }
         }
@@ -101,7 +124,11 @@ class MainActivity : FragmentActivity() {
 }
 
 @Composable
-fun TerminalArrowNavigation(themeManager: ThemeManager, vibratorHelper: VibratorHelper) {
+fun TerminalArrowNavigation(
+    themeManager: ThemeManager,
+    vibratorHelper: VibratorHelper,
+    initialAction: String? = null
+) {
     val navController = rememberNavController()
     val terminalViewModel: TerminalViewModel = hiltViewModel()
     val profileViewModel: ProfileViewModel = hiltViewModel()
@@ -111,48 +138,62 @@ fun TerminalArrowNavigation(themeManager: ThemeManager, vibratorHelper: Vibrator
     val editorViewModel: EditorViewModel = hiltViewModel()
     val context = LocalContext.current
 
+    LaunchedEffect(initialAction) {
+        when (initialAction) {
+            "com.terminalarrow.app.ACTION_NEW_HOST" -> navController.navigate("config/new")
+            "com.terminalarrow.app.ACTION_SETTINGS" -> navController.navigate("settings")
+        }
+    }
+
+    fun startConnection(profile: ConnectionProfile) {
+        terminalViewModel.onEvent(TerminalUiEvent.Connect(profile))
+        if (profile.id != 0) profileViewModel.markConnected(profile.id)
+        navController.navigate("terminal")
+    }
+
     NavHost(navController = navController, startDestination = "profiles") {
         composable("profiles") {
             ProfileListScreen(
                 viewModel = profileViewModel,
-                onProfileClick = { profile ->
-                    terminalViewModel.onEvent(TerminalUiEvent.Connect(profile))
-                    navController.navigate("terminal")
-                },
+                onProfileClick = { profile -> startConnection(profile) },
                 onSFTPClick = { profile ->
                     sftpViewModel.onEvent(
                         SftpUiEvent.Connect(profile.host, profile.port, profile.username, profile.password, profile.keyPath)
                     )
                     navController.navigate("sftp")
                 },
-                onAddProfile = { navController.navigate("config") },
-                onSnippetClick = { navController.navigate("snippets") },
-                onCloudClick = { navController.navigate("cloud") },
-                onThemeClick = { navController.navigate("themes") },
-                onFontClick = { navController.navigate("fonts") },
-                onAboutClick = { navController.navigate("about") }
+                onAddProfile = { navController.navigate("config/new") },
+                onEditProfile = { profile -> navController.navigate("config/${profile.id}") },
+                onSettingsClick = { navController.navigate("settings") }
             )
         }
-        composable("config") {
+        composable(
+            route = "config/{id}",
+            arguments = listOf(navArgument("id") { type = NavType.StringType })
+        ) { entry ->
+            val rawId = entry.arguments?.getString("id") ?: "new"
+            val id = rawId.toIntOrNull()
+            var initial by remember(id) { mutableStateOf<ConnectionProfile?>(null) }
+            LaunchedEffect(id) {
+                initial = if (id == null || id == 0) null else profileViewModel.loadProfile(id)
+            }
             HostConfigScreen(
                 onBack = { navController.popBackStack() },
-                onConnect = { profile ->
-                    terminalViewModel.onEvent(TerminalUiEvent.Connect(profile))
-                    navController.navigate("terminal")
-                },
-                onSave = { name, host, port, user, pass, keyPath, group, rules ->
-                    profileViewModel.saveProfile(
-                        ConnectionProfile(
-                            name = name,
-                            host = host,
-                            port = port,
-                            username = user,
-                            password = pass,
-                            keyPath = keyPath,
-                            group = group,
-                            forwardingRules = rules
-                        )
+                initial = initial,
+                onConnect = { profile -> startConnection(profile) },
+                onSave = { existingId, name, host, port, user, pass, keyPath, group, rules ->
+                    val merged = (initial ?: ConnectionProfile(name = name, host = host, username = user)).copy(
+                        id = existingId,
+                        name = name,
+                        host = host,
+                        port = port,
+                        username = user,
+                        password = pass,
+                        keyPath = keyPath,
+                        group = group,
+                        forwardingRules = rules
                     )
+                    profileViewModel.saveProfile(merged)
                     navController.popBackStack()
                 }
             )
@@ -168,6 +209,17 @@ fun TerminalArrowNavigation(themeManager: ThemeManager, vibratorHelper: Vibrator
         }
         composable("editor") {
             EditorScreen(editorViewModel) { navController.popBackStack() }
+        }
+        composable("settings") {
+            SettingsScreen(
+                profileViewModel = profileViewModel,
+                onBack = { navController.popBackStack() },
+                onThemeClick = { navController.navigate("themes") },
+                onFontClick = { navController.navigate("fonts") },
+                onSnippetsClick = { navController.navigate("snippets") },
+                onCloudClick = { navController.navigate("cloud") },
+                onAboutClick = { navController.navigate("about") }
+            )
         }
         composable("snippets") {
             SnippetScreen(snippetViewModel) { command ->

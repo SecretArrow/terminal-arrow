@@ -1,6 +1,7 @@
 package com.terminalarrow.app.data
 
 import androidx.annotation.Keep
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -23,7 +24,9 @@ data class ConnectionProfile(
     val password: String? = null,
     val keyPath: String? = null,
     val group: String? = "Default",
-    val forwardingRules: List<ForwardingRule> = emptyList()
+    val forwardingRules: List<ForwardingRule> = emptyList(),
+    @ColumnInfo(defaultValue = "0") val isFavorite: Boolean = false,
+    @ColumnInfo(defaultValue = "0") val lastConnectedAt: Long = 0L
 )
 
 @Keep

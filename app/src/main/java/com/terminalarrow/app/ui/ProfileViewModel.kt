@@ -4,15 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.terminalarrow.app.data.ConnectionProfile
 import com.terminalarrow.app.data.TerminalDao
-import com.terminalarrow.app.feature.profiles.ProfilesUiState
-import com.terminalarrow.app.feature.profiles.ProfilesUiEvent
 import com.terminalarrow.app.feature.profiles.ProfilesUiEffect
+import com.terminalarrow.app.feature.profiles.ProfilesUiEvent
+import com.terminalarrow.app.feature.profiles.ProfilesUiState
 import com.terminalarrow.app.utils.BackupManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+enum class ProfileSortMode { Recent, Alphabetical, Favorites }
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -22,6 +24,9 @@ class ProfileViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<ProfilesUiState>(ProfilesUiState.Loading)
     val uiState: StateFlow<ProfilesUiState> = _uiState.asStateFlow()
+
+    private val _sortMode = MutableStateFlow(ProfileSortMode.Recent)
+    val sortMode: StateFlow<ProfileSortMode> = _sortMode.asStateFlow()
 
     private val _uiEffect = Channel<ProfilesUiEffect>(Channel.BUFFERED)
     val uiEffect: Flow<ProfilesUiEffect> = _uiEffect.receiveAsFlow()
@@ -45,6 +50,26 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun setSortMode(mode: ProfileSortMode) {
+        _sortMode.value = mode
+    }
+
+    fun toggleFavorite(profile: ConnectionProfile) {
+        viewModelScope.launch {
+            runCatching { terminalDao.setFavorite(profile.id, !profile.isFavorite) }
+        }
+    }
+
+    fun markConnected(profileId: Int) {
+        viewModelScope.launch {
+            runCatching { terminalDao.markConnected(profileId, System.currentTimeMillis()) }
+        }
+    }
+
+    suspend fun loadProfile(id: Int): ConnectionProfile? = runCatching {
+        terminalDao.getProfileById(id)
+    }.getOrNull()
+
     private fun deleteProfile(profile: ConnectionProfile) {
         viewModelScope.launch {
             try {
@@ -61,8 +86,9 @@ class ProfileViewModel @Inject constructor(
             try {
                 val path = backupManager.exportProfiles()
                 onComplete(path)
+                _uiEffect.send(ProfilesUiEffect.ShowSnackbar("Exported to $path"))
             } catch (e: Exception) {
-                viewModelScope.launch { _uiEffect.send(ProfilesUiEffect.ShowSnackbar("Export failed")) }
+                _uiEffect.send(ProfilesUiEffect.ShowSnackbar("Export failed"))
             }
         }
     }
@@ -81,8 +107,13 @@ class ProfileViewModel @Inject constructor(
     fun saveProfile(profile: ConnectionProfile) {
         viewModelScope.launch {
             try {
-                terminalDao.insertProfile(profile)
-                _uiEffect.send(ProfilesUiEffect.ShowSnackbar("Profile saved"))
+                if (profile.id == 0) {
+                    terminalDao.insertProfile(profile)
+                    _uiEffect.send(ProfilesUiEffect.ShowSnackbar("Profile saved"))
+                } else {
+                    terminalDao.updateProfile(profile)
+                    _uiEffect.send(ProfilesUiEffect.ShowSnackbar("Profile updated"))
+                }
             } catch (e: Exception) {
                 _uiEffect.send(ProfilesUiEffect.ShowSnackbar("Failed to save profile"))
             }

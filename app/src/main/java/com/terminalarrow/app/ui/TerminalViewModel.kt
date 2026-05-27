@@ -81,11 +81,7 @@ class TerminalViewModel @Inject constructor(
                             val currentBuffer = newMap[id] ?: ""
                             val newBuffer = currentBuffer + optimized
                             
-                            newMap[id] = if (newBuffer.length > 5000) {
-                                newBuffer.substring(newBuffer.length - 5000)
-                            } else {
-                                newBuffer
-                            }
+                            newMap[id] = trimToLineLimit(newBuffer, MAX_BUFFER_LINES)
                             state.copy(sessions = newMap)
                         } else state
                     }
@@ -167,4 +163,27 @@ class TerminalViewModel @Inject constructor(
         sshService.disconnectAll()
         com.terminalarrow.app.service.SSHForegroundService.stop(sshService.getContext())
     }
+}
+
+private fun trimToLineLimit(buffer: String, maxLines: Int): String {
+    if (buffer.length < 4096) return buffer
+    // Cheap line count via newlines; preserve trailing partial line.
+    var newlines = 0
+    for (i in buffer.indices) if (buffer[i] == '\n') newlines++
+    if (newlines <= maxLines) return buffer
+    // Drop the oldest (newlines - maxLines) lines.
+    val toDrop = newlines - maxLines
+    var i = 0
+    var dropped = 0
+    while (i < buffer.length && dropped < toDrop) {
+        if (buffer[i] == '\n') dropped++
+        i++
+    }
+    return buffer.substring(i)
+}
+
+object TerminalViewModel {
+    // Roughly 5000 lines of scrollback — enough for build logs while still
+    // keeping recomposition cheap.
+    private const val MAX_BUFFER_LINES = 5000
 }

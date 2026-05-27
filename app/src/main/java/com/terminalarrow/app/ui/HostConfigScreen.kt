@@ -8,13 +8,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -52,18 +51,22 @@ private enum class AuthMode { Password, Key }
 fun HostConfigScreen(
     onBack: () -> Unit,
     onConnect: (ConnectionProfile) -> Unit,
-    onSave: (String, String, Int, String, String?, String?, String, List<ForwardingRule>) -> Unit
+    onSave: (Int, String, String, Int, String, String?, String?, String, List<ForwardingRule>) -> Unit,
+    initial: ConnectionProfile? = null
 ) {
-    var name by remember { mutableStateOf("") }
-    var group by remember { mutableStateOf("Default") }
-    var host by remember { mutableStateOf("") }
-    var port by remember { mutableStateOf("22") }
-    var user by remember { mutableStateOf("") }
-    var pass by remember { mutableStateOf("") }
-    var keyPath by remember { mutableStateOf("") }
-    var authMode by remember { mutableStateOf(AuthMode.Password) }
+    val editing = initial != null
+    var name by remember { mutableStateOf(initial?.name ?: "") }
+    var group by remember { mutableStateOf(initial?.group ?: "Default") }
+    var host by remember { mutableStateOf(initial?.host ?: "") }
+    var port by remember { mutableStateOf(initial?.port?.toString() ?: "22") }
+    var user by remember { mutableStateOf(initial?.username ?: "") }
+    var pass by remember { mutableStateOf(initial?.password ?: "") }
+    var keyPath by remember { mutableStateOf(initial?.keyPath ?: "") }
+    var authMode by remember {
+        mutableStateOf(if (initial?.keyPath.isNullOrBlank()) AuthMode.Password else AuthMode.Key)
+    }
     var revealPassword by remember { mutableStateOf(false) }
-    var rules by remember { mutableStateOf(listOf<ForwardingRule>()) }
+    var rules by remember { mutableStateOf(initial?.forwardingRules ?: emptyList()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val scrollState = rememberScrollState()
@@ -71,7 +74,7 @@ fun HostConfigScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("New SSH connection") },
+                title = { Text(if (editing) "Edit host" else "New host") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
@@ -85,53 +88,53 @@ fun HostConfigScreen(
                 .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            SectionHeader("Identity")
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Profile name") },
+                label = { Text("Display name (optional)") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
             OutlinedTextField(
                 value = group,
                 onValueChange = { group = it },
-                label = { Text("Group / folder") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedTextField(
-                    value = host,
-                    onValueChange = { host = it },
-                    label = { Text("Host") },
-                    singleLine = true,
-                    modifier = Modifier.weight(2f)
-                )
-                OutlinedTextField(
-                    value = port,
-                    onValueChange = { new -> port = new.filter { c -> c.isDigit() }.take(5) },
-                    label = { Text("Port") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            OutlinedTextField(
-                value = user,
-                onValueChange = { user = it },
-                label = { Text("Username") },
+                label = { Text("Group") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(Modifier.height(4.dp))
-            Text("Authentication", style = MaterialTheme.typography.titleMedium)
+            SectionHeader("Connection")
+            OutlinedTextField(
+                value = host,
+                onValueChange = { host = it; errorMessage = null },
+                label = { Text("Host or IP *") },
+                singleLine = true,
+                isError = host.isBlank() && errorMessage != null,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = port,
+                    onValueChange = { p -> port = p.filter { it.isDigit() }.take(5) },
+                    label = { Text("Port") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    modifier = Modifier.weight(1f)
+                )
+                OutlinedTextField(
+                    value = user,
+                    onValueChange = { user = it; errorMessage = null },
+                    label = { Text("Username *") },
+                    singleLine = true,
+                    modifier = Modifier.weight(2f)
+                )
+            }
+
+            SectionHeader("Authentication")
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
                     selected = authMode == AuthMode.Password,
@@ -147,7 +150,7 @@ fun HostConfigScreen(
             when (authMode) {
                 AuthMode.Password -> OutlinedTextField(
                     value = pass,
-                    onValueChange = { pass = it },
+                    onValueChange = { pass = it; errorMessage = null },
                     label = { Text("Password") },
                     singleLine = true,
                     visualTransformation = if (revealPassword) VisualTransformation.None else PasswordVisualTransformation(),
@@ -163,112 +166,139 @@ fun HostConfigScreen(
                 )
                 AuthMode.Key -> OutlinedTextField(
                     value = keyPath,
-                    onValueChange = { keyPath = it },
-                    label = { Text("Private key contents (PEM)") },
-                    placeholder = { Text("-----BEGIN OPENSSH PRIVATE KEY-----…") },
+                    onValueChange = { keyPath = it; errorMessage = null },
+                    label = { Text("Private key (PEM content)") },
                     minLines = 4,
-                    maxLines = 8,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
 
-            Spacer(Modifier.height(4.dp))
-            Text("Port forwarding", style = MaterialTheme.typography.titleMedium)
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    if (rules.isEmpty()) {
-                        Text(
-                            "No rules. Add one to tunnel a local port through this session.",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    } else {
-                        rules.forEachIndexed { index, rule ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                            ) {
-                                AssistChip(
-                                    onClick = {},
-                                    label = { Text("${rule.type}  ${rule.localPort} → ${rule.remoteHost}:${rule.remotePort}") }
-                                )
-                                Spacer(Modifier.weight(1f))
-                                IconButton(onClick = { rules = rules.toMutableList().also { it.removeAt(index) } }) {
-                                    Icon(Icons.Filled.Delete, contentDescription = "Remove rule")
-                                }
-                            }
+            SectionHeader("Port forwarding (optional)")
+            rules.forEachIndexed { idx, rule ->
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("${rule.type} :${rule.localPort}", style = MaterialTheme.typography.titleSmall)
+                            val target = rule.remoteHost?.let { "${rule.remoteHost}:${rule.remotePort}" } ?: "—"
+                            Text("→ $target", style = MaterialTheme.typography.bodySmall)
                         }
-                    }
-                    FilledTonalButton(onClick = {
-                        rules = rules + ForwardingRule("LOCAL", 8080, "localhost", 80)
-                    }) {
-                        Icon(Icons.Filled.Add, contentDescription = null)
-                        Spacer(Modifier.width(6.dp))
-                        Text("Add local 8080 → localhost:80")
+                        IconButton(onClick = {
+                            rules = rules.toMutableList().also { it.removeAt(idx) }
+                        }) {
+                            Icon(Icons.Filled.Delete, contentDescription = "Remove rule")
+                        }
                     }
                 }
             }
+            AssistChip(
+                onClick = {
+                    rules = rules + ForwardingRule(
+                        type = "LOCAL",
+                        localPort = 8080,
+                        remoteHost = "localhost",
+                        remotePort = 80
+                    )
+                },
+                label = { Text("Add LOCAL forward") },
+                leadingIcon = { Icon(Icons.Filled.Add, contentDescription = null) }
+            )
 
-            errorMessage?.let {
-                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            if (errorMessage != null) {
+                Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
             }
 
             Spacer(Modifier.height(8.dp))
-
-            fun validate(): Boolean {
-                if (host.isBlank()) { errorMessage = "Host is required"; return false }
-                if (user.isBlank()) { errorMessage = "Username is required"; return false }
-                if (authMode == AuthMode.Password && pass.isBlank()) {
-                    errorMessage = "Provide a password or switch to private key"; return false
-                }
-                if (authMode == AuthMode.Key && keyPath.isBlank()) {
-                    errorMessage = "Paste the private key contents"; return false
-                }
-                errorMessage = null
-                return true
-            }
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 OutlinedButton(
                     onClick = {
-                        if (validate()) {
-                            val finalName = name.ifBlank { "${user}@${host}" }
-                            onSave(
-                                finalName,
-                                host.trim(),
-                                port.toIntOrNull() ?: 22,
-                                user.trim(),
-                                if (authMode == AuthMode.Password) pass.ifBlank { null } else null,
-                                if (authMode == AuthMode.Key) keyPath.ifBlank { null } else null,
-                                group.ifBlank { "Default" },
-                                rules
-                            )
+                        val validation = validate(host, user, port, authMode, pass, keyPath)
+                        if (validation != null) {
+                            errorMessage = validation
+                            return@OutlinedButton
                         }
+                        onSave(
+                            initial?.id ?: 0,
+                            name.ifBlank { host },
+                            host.trim(),
+                            port.toIntOrNull() ?: 22,
+                            user.trim(),
+                            pass.ifBlank { null },
+                            keyPath.ifBlank { null },
+                            group.ifBlank { "Default" },
+                            rules
+                        )
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("Save") }
+                ) {
+                    Text(if (editing) "Update" else "Save")
+                }
                 FilledTonalButton(
                     onClick = {
-                        if (validate()) {
-                            onConnect(
-                                ConnectionProfile(
-                                    name = name.ifBlank { "${user}@${host}" },
-                                    host = host.trim(),
-                                    port = port.toIntOrNull() ?: 22,
-                                    username = user.trim(),
-                                    password = if (authMode == AuthMode.Password) pass.ifBlank { null } else null,
-                                    keyPath = if (authMode == AuthMode.Key) keyPath.ifBlank { null } else null,
-                                    group = group.ifBlank { "Default" },
-                                    forwardingRules = rules
-                                )
-                            )
+                        val validation = validate(host, user, port, authMode, pass, keyPath)
+                        if (validation != null) {
+                            errorMessage = validation
+                            return@FilledTonalButton
                         }
+                        onConnect(
+                            ConnectionProfile(
+                                id = initial?.id ?: 0,
+                                name = name.ifBlank { host },
+                                host = host.trim(),
+                                port = port.toIntOrNull() ?: 22,
+                                username = user.trim(),
+                                password = pass.ifBlank { null },
+                                keyPath = keyPath.ifBlank { null },
+                                group = group.ifBlank { "Default" },
+                                forwardingRules = rules,
+                                isFavorite = initial?.isFavorite ?: false,
+                                lastConnectedAt = initial?.lastConnectedAt ?: 0L
+                            )
+                        )
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("Connect") }
+                ) {
+                    Text("Connect")
+                }
             }
+            Spacer(Modifier.height(24.dp))
         }
     }
+}
+
+@Composable
+private fun SectionHeader(label: String) {
+    Text(
+        text = label.uppercase(),
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.primary
+    )
+}
+
+private fun validate(
+    host: String,
+    user: String,
+    port: String,
+    authMode: AuthMode,
+    pass: String,
+    keyPath: String
+): String? {
+    if (host.isBlank()) return "Host is required"
+    if (user.isBlank()) return "Username is required"
+    val portInt = port.toIntOrNull()
+    if (portInt == null || portInt !in 1..65535) return "Port must be between 1 and 65535"
+    when (authMode) {
+        AuthMode.Password -> if (pass.isBlank()) return "Password is required (or switch to Private key)"
+        AuthMode.Key -> if (keyPath.isBlank()) return "Private key is required (or switch to Password)"
+    }
+    return null
 }

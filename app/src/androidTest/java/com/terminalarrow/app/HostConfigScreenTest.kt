@@ -26,7 +26,7 @@ class HostConfigScreenTest {
                     connectedHost = profile.host
                     connectedUser = profile.username
                 },
-                onSave = { _, _, _, _, _, _, _, _ -> }
+                onSave = { _, _, _, _, _, _, _, _, _ -> }
             )
         }
 
@@ -46,7 +46,7 @@ class HostConfigScreenTest {
             HostConfigScreen(
                 onBack = {},
                 onConnect = { connected = true },
-                onSave = { _, _, _, _, _, _, _, _ -> }
+                onSave = { _, _, _, _, _, _, _, _, _ -> }
             )
         }
         composeTestRule.onNodeWithText("Host").performTextInput("example.com")

@@ -13,10 +13,15 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.schmizz.sshj.SSHClient
+import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder
 import net.schmizz.sshj.connection.channel.direct.Session
+import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder
+import net.schmizz.sshj.connection.channel.forwarded.SocketForwardingConnectListener
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier
 import java.io.File
 import java.io.OutputStream
+import java.net.InetSocketAddress
+import java.net.ServerSocket
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -42,7 +47,8 @@ class SSHService @Inject constructor(
         val client: SSHClient,
         val shell: Session.Shell,
         val shellStream: OutputStream,
-        val scope: CoroutineScope
+        val scope: CoroutineScope,
+        val forwarders: MutableList<AutoCloseable> = mutableListOf()
     )
 
     /**
@@ -84,19 +90,29 @@ class SSHService @Inject constructor(
                 }
             }
 
-            // Optional port-forwarding rules; failures are non-fatal.
-            profile.forwardingRules.forEach { rule -> runCatching { applyForward(client, rule) } }
-
             val session = client.startSession().apply {
                 allocatePTY("xterm-256color", 80, 24, 0, 0, emptyMap())
             }
             val shell = session.startShell()
             val outputStream = shell.outputStream
 
-            val sessionScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-            sessions[sessionId] = SessionContainer(client, shell, outputStream, sessionScope)
+            // Optional port-forwarding rules; failures are non-fatal so the
+            // primary shell session always wins.
+            val container = SessionContainer(
+                client = client,
+                shell = shell,
+                shellStream = outputStream,
+                scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+            )
+            sessions[sessionId] = container
 
-            sessionScope.launch {
+            profile.forwardingRules.forEach { rule ->
+                runCatching { applyForward(container, rule) }.onFailure {
+                    Log.w(TAG, "Forwarding rule ${rule.type}:${rule.localPort} failed", it)
+                }
+            }
+
+            container.scope.launch {
                 val buffer = ByteArray(4096)
                 try {
                     val input = shell.inputStream
@@ -122,11 +138,53 @@ class SSHService @Inject constructor(
         }
     }
 
-    private fun applyForward(client: SSHClient, rule: ForwardingRule) {
-        // Best-effort hook left intentionally lightweight; the SSHJ port-forwarding
-        // APIs require persistent worker threads and we treat this as opt-in
-        // functionality that should never crash the parent connect() call.
-        Log.d(TAG, "Forwarding rule registered (${rule.type} ${rule.localPort})")
+    private fun applyForward(container: SessionContainer, rule: ForwardingRule) {
+        when (rule.type.uppercase()) {
+            "LOCAL" -> {
+                val remoteHost = rule.remoteHost ?: "localhost"
+                val remotePort = rule.remotePort ?: rule.localPort
+                val params = LocalPortForwarder.Parameters(
+                    /* localAddress = */ "127.0.0.1",
+                    /* localPort = */ rule.localPort,
+                    /* remoteHost = */ remoteHost,
+                    /* remotePort = */ remotePort
+                )
+                val serverSocket = ServerSocket().apply {
+                    reuseAddress = true
+                    bind(InetSocketAddress("127.0.0.1", rule.localPort))
+                }
+                val forwarder = container.client.newLocalPortForwarder(params, serverSocket)
+                // Forwarder.listen() blocks; run it on a daemon thread so the
+                // call site stays responsive.
+                Thread({
+                    runCatching { forwarder.listen() }
+                }, "ta-local-fwd-${rule.localPort}").apply {
+                    isDaemon = true
+                    start()
+                }
+                container.forwarders.add(AutoCloseable {
+                    runCatching { forwarder.close() }
+                    runCatching { serverSocket.close() }
+                })
+                Log.d(TAG, "LOCAL forward 127.0.0.1:${rule.localPort} -> $remoteHost:$remotePort")
+            }
+            "REMOTE" -> {
+                val remoteHost = rule.remoteHost ?: "127.0.0.1"
+                val remotePort = rule.remotePort ?: rule.localPort
+                val forward = RemotePortForwarder.Forward("0.0.0.0", rule.localPort)
+                container.client.remotePortForwarder.bind(
+                    forward,
+                    SocketForwardingConnectListener(InetSocketAddress(remoteHost, remotePort))
+                )
+                container.forwarders.add(AutoCloseable {
+                    runCatching { container.client.remotePortForwarder.cancel(forward) }
+                })
+                Log.d(TAG, "REMOTE forward server:${rule.localPort} -> $remoteHost:$remotePort")
+            }
+            else -> {
+                Log.d(TAG, "Skipping unsupported forwarding type ${rule.type}")
+            }
+        }
     }
 
     fun resizePty(sessionId: String, cols: Int, rows: Int) {
@@ -151,6 +209,7 @@ class SSHService @Inject constructor(
 
     fun disconnect(sessionId: String) {
         val container = sessions.remove(sessionId) ?: return
+        container.forwarders.forEach { runCatching { it.close() } }
         runCatching { container.scope.cancel() }
         runCatching { container.shell.close() }
         runCatching { container.client.disconnect() }

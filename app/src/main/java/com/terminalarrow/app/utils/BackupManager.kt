@@ -66,6 +66,8 @@ class BackupManager @Inject constructor(
             })
         }
         put("forwardingRules", rules)
+        put("isFavorite", isFavorite)
+        put("lastConnectedAt", lastConnectedAt)
     }
 
     private fun JSONObject.toConnectionProfile(): ConnectionProfile {
@@ -92,7 +94,9 @@ class BackupManager @Inject constructor(
             password = optStringOrNull("password"),
             keyPath = optStringOrNull("keyPath"),
             group = optString("group", "Default"),
-            forwardingRules = rules
+            forwardingRules = rules,
+            isFavorite = optBoolean("isFavorite", false),
+            lastConnectedAt = optLong("lastConnectedAt", 0L)
         )
     }
 
