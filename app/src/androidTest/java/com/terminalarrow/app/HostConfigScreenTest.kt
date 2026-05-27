@@ -30,8 +30,8 @@ class HostConfigScreenTest {
             )
         }
 
-        composeTestRule.onNodeWithText("Host").performTextInput("192.168.1.1")
-        composeTestRule.onNodeWithText("Username").performTextInput("admin")
+        composeTestRule.onNodeWithText("Host or IP *").performTextInput("192.168.1.1")
+        composeTestRule.onNodeWithText("Username *").performTextInput("admin")
         composeTestRule.onNodeWithText("Password").performTextInput("secret")
         composeTestRule.onNodeWithText("Connect").performClick()
 
@@ -49,8 +49,8 @@ class HostConfigScreenTest {
                 onSave = { _, _, _, _, _, _, _, _, _ -> }
             )
         }
-        composeTestRule.onNodeWithText("Host").performTextInput("example.com")
-        composeTestRule.onNodeWithText("Username").performTextInput("root")
+        composeTestRule.onNodeWithText("Host or IP *").performTextInput("example.com")
+        composeTestRule.onNodeWithText("Username *").performTextInput("root")
         composeTestRule.onNodeWithText("Connect").performClick()
         assertTrue("Connect should not fire without auth", !connected)
     }
