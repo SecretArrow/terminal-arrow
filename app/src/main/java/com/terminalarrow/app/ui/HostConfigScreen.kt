@@ -139,12 +139,12 @@ fun HostConfigScreen(
                 FilterChip(
                     selected = authMode == AuthMode.Password,
                     onClick = { authMode = AuthMode.Password },
-                    label = { Text("Password") }
+                    label = { Text("Use password") }
                 )
                 FilterChip(
                     selected = authMode == AuthMode.Key,
                     onClick = { authMode = AuthMode.Key },
-                    label = { Text("Private key") }
+                    label = { Text("Use private key") }
                 )
             }
             when (authMode) {
