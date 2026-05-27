@@ -17,7 +17,7 @@ class ConnectionProfileTest {
         assertEquals(22, p.port)
         assertEquals(null, p.password)
         assertEquals(null, p.keyPath)
-        assertEquals("default", p.group)
+        assertEquals("Default", p.group)
         assertEquals(emptyList<ForwardingRule>(), p.forwardingRules)
         assertEquals(false, p.isFavorite)
         assertEquals(0L, p.lastConnectedAt)
