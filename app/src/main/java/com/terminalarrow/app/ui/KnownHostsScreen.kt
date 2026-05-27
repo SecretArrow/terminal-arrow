@@ -19,10 +19,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -81,20 +81,19 @@ fun KnownHostsScreen(
         } else {
             LazyColumn(contentPadding = PaddingValues(vertical = 8.dp), modifier = Modifier.padding(padding)) {
                 items(hosts, key = { it.id }) { host ->
-                    ListItem(
-                        headlineContent = { Text("${host.host}:${host.port}") },
-                        supportingContent = {
-                            Column {
-                                Text("${host.keyType}  ${shortFingerprint(host.fingerprint)}", style = MaterialTheme.typography.bodySmall)
-                                Text("First seen ${DateFormat.getDateInstance().format(Date(host.firstSeen))}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        },
-                        trailingContent = {
-                            IconButton(onClick = { viewModel.delete(host) }) {
-                                Icon(Icons.Filled.Delete, contentDescription = "Forget host")
-                            }
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("${host.host}:${host.port}", style = MaterialTheme.typography.titleMedium)
+                            Text("${host.keyType}  ${shortFingerprint(host.fingerprint)}", style = MaterialTheme.typography.bodySmall)
+                            Text("First seen ${DateFormat.getDateInstance().format(Date(host.firstSeen))}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                    )
+                        IconButton(onClick = { viewModel.delete(host) }) {
+                            Icon(Icons.Filled.Delete, contentDescription = "Forget host")
+                        }
+                    }
                     Divider()
                 }
             }

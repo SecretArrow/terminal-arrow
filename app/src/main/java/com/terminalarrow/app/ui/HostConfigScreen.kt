@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -190,7 +192,7 @@ fun HostConfigScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(12.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text("${rule.type} :${rule.localPort}", style = MaterialTheme.typography.titleSmall)
@@ -241,27 +243,24 @@ fun HostConfigScreen(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
-            ListItem(
-                headlineContent = { Text("Compression (zlib)") },
-                supportingContent = { Text("Useful on slow or metered links") },
-                trailingContent = {
-                    Switch(checked = useCompression, onCheckedChange = { useCompression = it })
-                }
-            )
-            ListItem(
-                headlineContent = { Text("Auto-reconnect on drop") },
-                supportingContent = { Text("Retries up to 3 times with a 5s backoff") },
-                trailingContent = {
-                    Switch(checked = autoReconnect, onCheckedChange = { autoReconnect = it })
-                }
-            )
-            ListItem(
-                headlineContent = { Text("Strict host key checking") },
-                supportingContent = { Text("Refuse to connect if the server key changes (TOFU)") },
-                trailingContent = {
-                    Switch(checked = strictHostKey, onCheckedChange = { strictHostKey = it })
-                }
-            )
+            OptionRow(
+                title = "Compression (zlib)",
+                subtitle = "Useful on slow or metered links"
+            ) {
+                Switch(checked = useCompression, onCheckedChange = { useCompression = it })
+            }
+            OptionRow(
+                title = "Auto-reconnect on drop",
+                subtitle = "Retries up to 3 times with a 5s backoff"
+            ) {
+                Switch(checked = autoReconnect, onCheckedChange = { autoReconnect = it })
+            }
+            OptionRow(
+                title = "Strict host key checking",
+                subtitle = "Refuse to connect if the server key changes (TOFU)"
+            ) {
+                Switch(checked = strictHostKey, onCheckedChange = { strictHostKey = it })
+            }
 
 
             if (errorMessage != null) {
@@ -364,4 +363,22 @@ private fun validate(
         AuthMode.Key -> if (keyPath.isBlank()) return "Private key is required (or switch to Password)"
     }
     return null
+}
+
+
+@Composable
+private fun OptionRow(title: String, subtitle: String, trailing: @Composable () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Spacer(Modifier.width(12.dp))
+        trailing()
+    }
 }

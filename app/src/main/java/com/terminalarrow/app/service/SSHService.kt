@@ -51,7 +51,7 @@ class SSHService @Inject constructor(
         sessionId: String,
         profile: ConnectionProfile,
         onOutput: (String) -> Unit
-    ) = withContext(Dispatchers.IO) {
+    ): Unit = withContext(Dispatchers.IO) {
         disconnect(sessionId)
         attemptConnect(sessionId, profile, onOutput, attempt = 0)
     }
@@ -61,7 +61,7 @@ class SSHService @Inject constructor(
         profile: ConnectionProfile,
         onOutput: (String) -> Unit,
         attempt: Int
-    ) = withContext(Dispatchers.IO) {
+    ): Unit = withContext(Dispatchers.IO) {
         val client = SSHClient().apply {
             addHostKeyVerifier(TofuHostKeyVerifier(dao, profile.strictHostKeyChecking))
             connectTimeout = CONNECT_TIMEOUT_MS
