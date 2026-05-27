@@ -31,7 +31,7 @@ fun TerminalCanvas(
     val density = LocalDensity.current.density
     
     val listState = rememberLazyListState()
-    val rowsLimit = 100 
+    val rowsLimit = 5000 
     val lines = remember(output) { output.split("\n").takeLast(rowsLimit) }
     
     LaunchedEffect(lines.size) {

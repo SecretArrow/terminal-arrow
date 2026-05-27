@@ -34,7 +34,11 @@ class BiometricHelper @Inject constructor() {
             .setNegativeButtonText("Cancel")
             .build()
 
-        biometricPrompt.authenticate(promptInfo)
+        try {
+            biometricPrompt.authenticate(promptInfo)
+        } catch (e: Exception) {
+            onError(e.message ?: "Biometric error")
+        }
     }
 
     fun isBiometricAvailable(activity: FragmentActivity): Boolean {

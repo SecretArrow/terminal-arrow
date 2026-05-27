@@ -23,7 +23,8 @@ class TerminalViewModel @Inject constructor(
     private val sshService: SSHService,
     private val sftpService: SFTPService,
     private val vibratorHelper: VibratorHelper,
-    private val nativeProcessor: NativeBufferProcessor
+    private val nativeProcessor: NativeBufferProcessor,
+    private val dao: com.terminalarrow.app.data.TerminalDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<TerminalUiState>(
@@ -65,6 +66,10 @@ class TerminalViewModel @Inject constructor(
             try {
                 com.terminalarrow.app.service.SSHForegroundService.start(sshService.getContext())
                 sftpService.connect(profile.host, profile.port, profile.username, profile.password, profile.keyPath)
+
+                if (profile.id != 0) {
+                    runCatching { dao.markConnected(profile.id, System.currentTimeMillis()) }
+                }
                 
                 sshService.connect(id, profile) { output ->
                     if (output.contains("\u0007")) {
@@ -72,7 +77,7 @@ class TerminalViewModel @Inject constructor(
                     }
                     
                     val optimized = try {
-                        nativeProcessor.processBufferNative(output)
+                        nativeProcessor.processBuffer(output)
                     } catch (e: Exception) {
                         output
                     }
@@ -134,7 +139,7 @@ class TerminalViewModel @Inject constructor(
             viewModelScope.launch {
                 try {
                     val buffer = (_uiState.value as? TerminalUiState.Success)?.sessions?.get(id) ?: ""
-                    nativeProcessor.fastSearchNative(buffer, query)
+                    nativeProcessor.fastSearch(buffer, query)
                 } catch (e: Exception) {}
             }
         }

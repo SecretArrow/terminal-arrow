@@ -37,6 +37,7 @@ class CloudViewModel @Inject constructor(
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun fetchAWSInstances(accessKey: String, secretKey: String, region: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.value = CloudUiState.Loading
