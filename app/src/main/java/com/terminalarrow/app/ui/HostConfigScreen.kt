@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -51,7 +52,7 @@ private enum class AuthMode { Password, Key }
 fun HostConfigScreen(
     onBack: () -> Unit,
     onConnect: (ConnectionProfile) -> Unit,
-    onSave: (Int, String, String, Int, String, String?, String?, String, List<ForwardingRule>) -> Unit,
+    onSave: (ConnectionProfile) -> Unit,
     initial: ConnectionProfile? = null
 ) {
     val editing = initial != null
@@ -62,6 +63,10 @@ fun HostConfigScreen(
     var user by remember { mutableStateOf(initial?.username ?: "") }
     var pass by remember { mutableStateOf(initial?.password ?: "") }
     var keyPath by remember { mutableStateOf(initial?.keyPath ?: "") }
+    var keepAlive by remember { mutableStateOf((initial?.keepAliveSeconds ?: 30).toString()) }
+    var useCompression by remember { mutableStateOf(initial?.useCompression ?: false) }
+    var autoReconnect by remember { mutableStateOf(initial?.autoReconnect ?: false) }
+    var strictHostKey by remember { mutableStateOf(initial?.strictHostKeyChecking ?: true) }
     var authMode by remember {
         mutableStateOf(if (initial?.keyPath.isNullOrBlank()) AuthMode.Password else AuthMode.Key)
     }
@@ -213,6 +218,52 @@ fun HostConfigScreen(
                 leadingIcon = { Icon(Icons.Filled.Add, contentDescription = null) }
             )
 
+            AssistChip(
+                onClick = {
+                    rules = rules + ForwardingRule(
+                        type = "DYNAMIC",
+                        localPort = 1080,
+                        remoteHost = null,
+                        remotePort = null
+                    )
+                },
+                label = { Text("Add DYNAMIC (SOCKS) forward") },
+                leadingIcon = { Icon(Icons.Filled.Add, contentDescription = null) }
+            )
+
+            Spacer(Modifier.height(16.dp))
+            SectionHeader("Advanced")
+            OutlinedTextField(
+                value = keepAlive,
+                onValueChange = { keepAlive = it.filter { c -> c.isDigit() }.take(5) },
+                label = { Text("Keepalive (seconds, 0 = off)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            ListItem(
+                headlineContent = { Text("Compression (zlib)") },
+                supportingContent = { Text("Useful on slow or metered links") },
+                trailingContent = {
+                    Switch(checked = useCompression, onCheckedChange = { useCompression = it })
+                }
+            )
+            ListItem(
+                headlineContent = { Text("Auto-reconnect on drop") },
+                supportingContent = { Text("Retries up to 3 times with a 5s backoff") },
+                trailingContent = {
+                    Switch(checked = autoReconnect, onCheckedChange = { autoReconnect = it })
+                }
+            )
+            ListItem(
+                headlineContent = { Text("Strict host key checking") },
+                supportingContent = { Text("Refuse to connect if the server key changes (TOFU)") },
+                trailingContent = {
+                    Switch(checked = strictHostKey, onCheckedChange = { strictHostKey = it })
+                }
+            )
+
+
             if (errorMessage != null) {
                 Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
             }
@@ -227,15 +278,23 @@ fun HostConfigScreen(
                             return@OutlinedButton
                         }
                         onSave(
-                            initial?.id ?: 0,
-                            name.ifBlank { host },
-                            host.trim(),
-                            port.toIntOrNull() ?: 22,
-                            user.trim(),
-                            pass.ifBlank { null },
-                            keyPath.ifBlank { null },
-                            group.ifBlank { "Default" },
-                            rules
+                            ConnectionProfile(
+                                id = initial?.id ?: 0,
+                                name = name.ifBlank { host },
+                                host = host.trim(),
+                                port = port.toIntOrNull() ?: 22,
+                                username = user.trim(),
+                                password = pass.ifBlank { null },
+                                keyPath = keyPath.ifBlank { null },
+                                group = group.ifBlank { "Default" },
+                                forwardingRules = rules,
+                                isFavorite = initial?.isFavorite ?: false,
+                                lastConnectedAt = initial?.lastConnectedAt ?: 0L,
+                                keepAliveSeconds = keepAlive.toIntOrNull()?.coerceIn(0, 3600) ?: 30,
+                                useCompression = useCompression,
+                                autoReconnect = autoReconnect,
+                                strictHostKeyChecking = strictHostKey
+                            )
                         )
                     },
                     modifier = Modifier.weight(1f)
@@ -261,7 +320,11 @@ fun HostConfigScreen(
                                 group = group.ifBlank { "Default" },
                                 forwardingRules = rules,
                                 isFavorite = initial?.isFavorite ?: false,
-                                lastConnectedAt = initial?.lastConnectedAt ?: 0L
+                                lastConnectedAt = initial?.lastConnectedAt ?: 0L,
+                                keepAliveSeconds = keepAlive.toIntOrNull()?.coerceIn(0, 3600) ?: 30,
+                                useCompression = useCompression,
+                                autoReconnect = autoReconnect,
+                                strictHostKeyChecking = strictHostKey
                             )
                         )
                     },

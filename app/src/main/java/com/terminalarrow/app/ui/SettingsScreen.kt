@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
@@ -49,7 +50,8 @@ fun SettingsScreen(
     onFontClick: () -> Unit,
     onSnippetsClick: () -> Unit,
     onCloudClick: () -> Unit,
-    onAboutClick: () -> Unit
+    onAboutClick: () -> Unit,
+    onKnownHostsClick: () -> Unit
 ) {
     val context = LocalContext.current
     val scroll = rememberScrollState()
@@ -114,6 +116,12 @@ fun SettingsScreen(
                     subtitle = "Pull instances from AWS EC2",
                     leading = Icons.Filled.CloudUpload,
                     onClick = onCloudClick
+                )
+                ClickableRow(
+                    title = "Known hosts",
+                    subtitle = "Server fingerprints you have trusted",
+                    leading = Icons.Filled.Shield,
+                    onClick = onKnownHostsClick
                 )
             }
 

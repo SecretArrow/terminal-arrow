@@ -68,6 +68,10 @@ class BackupManager @Inject constructor(
         put("forwardingRules", rules)
         put("isFavorite", isFavorite)
         put("lastConnectedAt", lastConnectedAt)
+        put("keepAliveSeconds", keepAliveSeconds)
+        put("useCompression", useCompression)
+        put("autoReconnect", autoReconnect)
+        put("strictHostKeyChecking", strictHostKeyChecking)
     }
 
     private fun JSONObject.toConnectionProfile(): ConnectionProfile {
@@ -96,7 +100,11 @@ class BackupManager @Inject constructor(
             group = optString("group", "Default"),
             forwardingRules = rules,
             isFavorite = optBoolean("isFavorite", false),
-            lastConnectedAt = optLong("lastConnectedAt", 0L)
+            lastConnectedAt = optLong("lastConnectedAt", 0L),
+            keepAliveSeconds = optInt("keepAliveSeconds", 30),
+            useCompression = optBoolean("useCompression", false),
+            autoReconnect = optBoolean("autoReconnect", false),
+            strictHostKeyChecking = optBoolean("strictHostKeyChecking", true)
         )
     }
 

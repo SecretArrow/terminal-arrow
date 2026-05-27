@@ -181,19 +181,8 @@ fun TerminalArrowNavigation(
                 onBack = { navController.popBackStack() },
                 initial = initial,
                 onConnect = { profile -> startConnection(profile) },
-                onSave = { existingId, name, host, port, user, pass, keyPath, group, rules ->
-                    val merged = (initial ?: ConnectionProfile(name = name, host = host, username = user)).copy(
-                        id = existingId,
-                        name = name,
-                        host = host,
-                        port = port,
-                        username = user,
-                        password = pass,
-                        keyPath = keyPath,
-                        group = group,
-                        forwardingRules = rules
-                    )
-                    profileViewModel.saveProfile(merged)
+                onSave = { profile ->
+                    profileViewModel.saveProfile(profile)
                     navController.popBackStack()
                 }
             )
@@ -218,7 +207,8 @@ fun TerminalArrowNavigation(
                 onFontClick = { navController.navigate("fonts") },
                 onSnippetsClick = { navController.navigate("snippets") },
                 onCloudClick = { navController.navigate("cloud") },
-                onAboutClick = { navController.navigate("about") }
+                onAboutClick = { navController.navigate("about") },
+                onKnownHostsClick = { navController.navigate("known-hosts") }
             )
         }
         composable("snippets") {
@@ -235,5 +225,9 @@ fun TerminalArrowNavigation(
             FontSelectionScreen(themeManager) { navController.popBackStack() }
         }
         composable("about") { AboutScreen(onBack = { navController.popBackStack() }) }
+        composable("known-hosts") {
+            val vm: com.terminalarrow.app.ui.KnownHostsViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+            com.terminalarrow.app.ui.KnownHostsScreen(viewModel = vm, onBack = { navController.popBackStack() })
+        }
     }
 }

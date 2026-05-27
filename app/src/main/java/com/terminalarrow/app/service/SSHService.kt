@@ -4,21 +4,21 @@ import android.content.Context
 import android.util.Log
 import com.terminalarrow.app.data.ConnectionProfile
 import com.terminalarrow.app.data.ForwardingRule
+import com.terminalarrow.app.data.TerminalDao
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.schmizz.sshj.SSHClient
-import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder
 import net.schmizz.sshj.connection.channel.direct.Parameters
 import net.schmizz.sshj.connection.channel.direct.Session
 import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder
 import net.schmizz.sshj.connection.channel.forwarded.SocketForwardingConnectListener
-import net.schmizz.sshj.transport.verification.PromiscuousVerifier
 import java.io.File
 import java.io.OutputStream
 import java.net.InetSocketAddress
@@ -27,21 +27,15 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Owns the lifecycle of every active SSH shell session. Designed so that
- * partial failures (auth issues, dropped sockets) never crash the app - every
- * external entry point is wrapped in try/catch and reports back through
- * [onOutput] or returns silently.
- */
 @Singleton
 class SSHService @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val dao: TerminalDao
 ) {
 
     private val sessions = ConcurrentHashMap<String, SessionContainer>()
 
     fun getContext(): Context = context
-
     fun isConnected(sessionId: String): Boolean = sessions.containsKey(sessionId)
 
     data class SessionContainer(
@@ -49,26 +43,32 @@ class SSHService @Inject constructor(
         val shell: Session.Shell,
         val shellStream: OutputStream,
         val scope: CoroutineScope,
+        val profile: ConnectionProfile,
         val forwarders: MutableList<AutoCloseable> = mutableListOf()
     )
 
-    /**
-     * Open an interactive shell. All errors are surfaced through [onOutput] as
-     * a single "Error: ..." line so that the UI can show them without the
-     * caller having to know about SSH internals.
-     */
     suspend fun connect(
         sessionId: String,
         profile: ConnectionProfile,
         onOutput: (String) -> Unit
     ) = withContext(Dispatchers.IO) {
-        // If a previous session with this id is around, tear it down first.
         disconnect(sessionId)
+        attemptConnect(sessionId, profile, onOutput, attempt = 0)
+    }
 
+    private suspend fun attemptConnect(
+        sessionId: String,
+        profile: ConnectionProfile,
+        onOutput: (String) -> Unit,
+        attempt: Int
+    ) = withContext(Dispatchers.IO) {
         val client = SSHClient().apply {
-            addHostKeyVerifier(PromiscuousVerifier())
+            addHostKeyVerifier(TofuHostKeyVerifier(dao, profile.strictHostKeyChecking))
             connectTimeout = CONNECT_TIMEOUT_MS
             timeout = SOCKET_TIMEOUT_MS
+            if (profile.useCompression) {
+                runCatching { useCompression() }
+            }
         }
         var tempKeyFile: File? = null
         try {
@@ -91,30 +91,38 @@ class SSHService @Inject constructor(
                 }
             }
 
+            // SSH keepalive (server-side timeout protection)
+            if (profile.keepAliveSeconds > 0) {
+                runCatching {
+                    client.connection.keepAlive.keepAliveInterval = profile.keepAliveSeconds
+                }
+            }
+
             val session = client.startSession().apply {
                 allocatePTY("xterm-256color", 80, 24, 0, 0, emptyMap())
             }
             val shell = session.startShell()
             val outputStream = shell.outputStream
 
-            // Optional port-forwarding rules; failures are non-fatal so the
-            // primary shell session always wins.
             val container = SessionContainer(
                 client = client,
                 shell = shell,
                 shellStream = outputStream,
-                scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+                scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+                profile = profile
             )
             sessions[sessionId] = container
 
             profile.forwardingRules.forEach { rule ->
                 runCatching { applyForward(container, rule) }.onFailure {
-                    Log.w(TAG, "Forwarding rule ${rule.type}:${rule.localPort} failed", it)
+                    Log.w(TAG, "Forwarding ${rule.type}:${rule.localPort} failed", it)
+                    onOutput("[forward ${rule.type}:${rule.localPort} failed: ${it.message}]\r\n")
                 }
             }
 
             container.scope.launch {
                 val buffer = ByteArray(4096)
+                var crashed = false
                 try {
                     val input = shell.inputStream
                     while (isActive) {
@@ -123,17 +131,28 @@ class SSHService @Inject constructor(
                         if (read > 0) onOutput(String(buffer, 0, read, Charsets.UTF_8))
                     }
                 } catch (e: Throwable) {
+                    crashed = true
                     if (isActive) {
                         onOutput("\r\n[connection lost: ${e.message ?: e.javaClass.simpleName}]\r\n")
                     }
                 } finally {
                     disconnect(sessionId)
+                    if (crashed && profile.autoReconnect && attempt < MAX_RECONNECT_ATTEMPTS) {
+                        onOutput("[auto-reconnect attempt ${attempt + 1}/$MAX_RECONNECT_ATTEMPTS in ${RECONNECT_DELAY_MS / 1000}s]\r\n")
+                        delay(RECONNECT_DELAY_MS)
+                        attemptConnect(sessionId, profile, onOutput, attempt + 1)
+                    }
                 }
             }
         } catch (e: Throwable) {
-            Log.w(TAG, "connect($sessionId) failed", e)
+            Log.w(TAG, "connect($sessionId) attempt=$attempt failed", e)
             onOutput("Error: ${e.message ?: e.javaClass.simpleName}\r\n")
             runCatching { client.disconnect() }
+            if (profile.autoReconnect && attempt < MAX_RECONNECT_ATTEMPTS) {
+                onOutput("[auto-reconnect attempt ${attempt + 1}/$MAX_RECONNECT_ATTEMPTS in ${RECONNECT_DELAY_MS / 1000}s]\r\n")
+                delay(RECONNECT_DELAY_MS)
+                attemptConnect(sessionId, profile, onOutput, attempt + 1)
+            }
         } finally {
             tempKeyFile?.let { runCatching { it.delete() } }
         }
@@ -144,22 +163,13 @@ class SSHService @Inject constructor(
             "LOCAL" -> {
                 val remoteHost = rule.remoteHost ?: "localhost"
                 val remotePort = rule.remotePort ?: rule.localPort
-                val params = Parameters(
-                    /* localAddress = */ "127.0.0.1",
-                    /* localPort = */ rule.localPort,
-                    /* remoteHost = */ remoteHost,
-                    /* remotePort = */ remotePort
-                )
+                val params = Parameters("127.0.0.1", rule.localPort, remoteHost, remotePort)
                 val serverSocket = ServerSocket().apply {
                     reuseAddress = true
                     bind(InetSocketAddress("127.0.0.1", rule.localPort))
                 }
                 val forwarder = container.client.newLocalPortForwarder(params, serverSocket)
-                // Forwarder.listen() blocks; run it on a daemon thread so the
-                // call site stays responsive.
-                Thread({
-                    runCatching { forwarder.listen() }
-                }, "ta-local-fwd-${rule.localPort}").apply {
+                Thread({ runCatching { forwarder.listen() } }, "ta-local-fwd-${rule.localPort}").apply {
                     isDaemon = true
                     start()
                 }
@@ -167,7 +177,7 @@ class SSHService @Inject constructor(
                     runCatching { forwarder.close() }
                     runCatching { serverSocket.close() }
                 })
-                Log.d(TAG, "LOCAL forward 127.0.0.1:${rule.localPort} -> $remoteHost:$remotePort")
+                Log.d(TAG, "LOCAL 127.0.0.1:${rule.localPort} -> $remoteHost:$remotePort")
             }
             "REMOTE" -> {
                 val remoteHost = rule.remoteHost ?: "127.0.0.1"
@@ -180,11 +190,28 @@ class SSHService @Inject constructor(
                 container.forwarders.add(AutoCloseable {
                     runCatching { container.client.remotePortForwarder.cancel(forward) }
                 })
-                Log.d(TAG, "REMOTE forward server:${rule.localPort} -> $remoteHost:$remotePort")
+                Log.d(TAG, "REMOTE server:${rule.localPort} -> $remoteHost:$remotePort")
             }
-            else -> {
-                Log.d(TAG, "Skipping unsupported forwarding type ${rule.type}")
+            "DYNAMIC" -> {
+                // Minimal SOCKS5 proxy: accept localhost connections and tunnel
+                // each via direct-tcpip to the destination requested by the client.
+                val serverSocket = ServerSocket().apply {
+                    reuseAddress = true
+                    bind(InetSocketAddress("127.0.0.1", rule.localPort))
+                }
+                val acceptor = Thread({
+                    SocksProxy(container.client, serverSocket).run()
+                }, "ta-dynamic-fwd-${rule.localPort}").apply {
+                    isDaemon = true
+                    start()
+                }
+                container.forwarders.add(AutoCloseable {
+                    runCatching { serverSocket.close() }
+                    runCatching { acceptor.interrupt() }
+                })
+                Log.d(TAG, "DYNAMIC SOCKS proxy on 127.0.0.1:${rule.localPort}")
             }
+            else -> Log.d(TAG, "Skipping unsupported forwarding type ${rule.type}")
         }
     }
 
@@ -224,5 +251,7 @@ class SSHService @Inject constructor(
         private const val TAG = "SSHService"
         private const val CONNECT_TIMEOUT_MS = 15_000
         private const val SOCKET_TIMEOUT_MS = 30_000
+        private const val MAX_RECONNECT_ATTEMPTS = 3
+        private const val RECONNECT_DELAY_MS = 5_000L
     }
 }
