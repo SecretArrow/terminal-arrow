@@ -3,6 +3,7 @@ package com.terminalarrow.app
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import com.terminalarrow.app.ui.HostConfigScreen
 import org.junit.Assert.assertEquals
@@ -33,7 +34,8 @@ class HostConfigScreenTest {
         composeTestRule.onNodeWithText("Host or IP *").performTextInput("192.168.1.1")
         composeTestRule.onNodeWithText("Username *").performTextInput("admin")
         composeTestRule.onNodeWithText("Password").performTextInput("secret")
-        composeTestRule.onNodeWithText("Connect").performClick()
+        composeTestRule.onNodeWithText("Connect").performScrollTo().performClick()
+        composeTestRule.waitForIdle()
 
         assertEquals("192.168.1.1", connectedHost)
         assertEquals("admin", connectedUser)
@@ -51,7 +53,8 @@ class HostConfigScreenTest {
         }
         composeTestRule.onNodeWithText("Host or IP *").performTextInput("example.com")
         composeTestRule.onNodeWithText("Username *").performTextInput("root")
-        composeTestRule.onNodeWithText("Connect").performClick()
+        composeTestRule.onNodeWithText("Connect").performScrollTo().performClick()
+        composeTestRule.waitForIdle()
         assertTrue("Connect should not fire without auth", !connected)
     }
 }
