@@ -67,7 +67,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     suspend fun loadProfile(id: Int): ConnectionProfile? = runCatching {
-        terminalDao.getProfileById(id)
+        terminalDao.getProfile(id)
     }.getOrNull()
 
     private fun deleteProfile(profile: ConnectionProfile) {
